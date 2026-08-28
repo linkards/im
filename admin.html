@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de administración</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --accent: #6c5ce7;
+    --bg: #0e0e13;
+    --surface: #17171f;
+    --surface-2: #1e1e28;
+    --border: #2a2a36;
+    --text: #f2f2f5;
+    --muted: #9091a3;
+    --ok: #2ecc71;
+    --warn: #f59e0b;
+    --err: #e74c3c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    min-height: 100vh;
+  }
+  .hidden { display: none !important; }
+
+  /* ── Login ── */
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .login-card {
+    width: 100%;
+    max-width: 380px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+  }
+  .login-card h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    margin: 0 0 4px;
+  }
+  .login-card p.subtitle { color: var(--muted); font-size: 13px; margin: 0 0 22px; }
+
+  label { display: block; font-size: 13px; color: var(--muted); margin: 14px 0 6px; }
+  input[type=text], input[type=email], input[type=password], textarea {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 12px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+  }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 70px; }
+
+  button {
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    padding: 12px;
+    width: 100%;
+    margin-top: 20px;
+  }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary {
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+  }
+  .btn-danger {
+    background: transparent;
+    color: var(--err);
+    padding: 6px 10px;
+  }
+  .btn-icon {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .msg { font-size: 13px; margin-top: 14px; padding: 10px; border-radius: 8px; display: none; text-align: center; }
+  .msg.show { display: block; }
+  .msg.err { background: rgba(231,76,60,0.12); color: var(--err); }
+  .msg.ok { background: rgba(46,204,113,0.12); color: var(--ok); }
+
+  /* ── Dashboard ── */
+  #dashboard {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .topbar .brand {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+  }
+  .topbar-actions { display: flex; gap: 8px; }
+
+  .status-banner {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .status-banner.pendiente { background: rgba(245,158,11,0.12); color: var(--warn); }
+  .status-banner.aprobado { background: rgba(46,204,113,0.12); color: var(--ok); }
+  .status-banner.rechazado { background: rgba(231,76,60,0.12); color: var(--err); }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    margin-bottom: 18px;
+  }
+  .panel h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    margin: 0 0 4px;
+  }
+  .panel p.panel-sub { color: var(--muted); font-size: 12.5px; margin: 0 0 16px; }
+
+  /* Avatar uploader */
+  .avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 6px;
+  }
+  .avatar-preview {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .avatar-fallback-adm {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .avatar-actions { display: flex; flex-direction: column; gap: 8px; }
+  .avatar-actions input[type=file] { display: none; }
+  .avatar-hint { font-size: 11.5px; color: var(--muted); }
+
+  /* Color de acento */
+  .color-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  input[type=color] {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: transparent;
+    cursor: pointer;
+  }
+  .color-value { font-size: 13px; color: var(--muted); font-family: monospace; }
+
+  /* Links */
+  .link-form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .link-form input { flex: 1; }
+
+  .link-list { display: flex; flex-direction: column; gap: 8px; }
+  .link-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: grab;
+  }
+  .link-row.dragging { opacity: 0.4; }
+  .link-row .grip { color: var(--muted); font-size: 13px; }
+  .link-row .link-info { flex: 1; min-width: 0; }
+  .link-row .link-info .lt { font-size: 13.5px; font-weight: 500; }
+  .link-row .link-info .lu {
+    font-size: 11.5px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .link-row-actions { display: flex; gap: 4px; align-items: center; }
+  .toggle {
+    width: 34px;
+    height: 20px;
+    border-radius: 20px;
+    background: var(--border);
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .toggle.on { background: var(--accent); }
+  .toggle .dot {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    transition: left 0.15s ease;
+  }
+  .toggle.on .dot { left: 16px; }
+
+  .empty-hint { color: var(--muted); font-size: 13px; text-align: center; padding: 12px; }
+
+  .save-bar {
+    position: sticky;
+    bottom: 16px;
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  .save-bar button {
+    padding: 13px 26px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+
+  .view-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-card">
+    <h1>Panel de administración</h1>
+    <p class="subtitle">Inicia sesión para editar tu weblink</p>
+
+    <label>Correo electrónico</label>
+    <input type="email" id="login-email" placeholder="tucorreo@ejemplo.com">
+
+    <label>Contraseña</label>
+    <input type="password" id="login-password" placeholder="Tu contraseña">
+
+    <button class="btn-primary" id="btn-login">Iniciar sesión</button>
+    <div class="msg" id="login-msg"></div>
+  </div>
+</div>
+
+<!-- ── DASHBOARD ── -->
+<div id="dashboard" class="hidden">
+  <div class="topbar">
+    <span class="brand">Tu weblink</span>
+    <div class="topbar-actions">
+      <a class="view-link" id="ver-perfil" href="#" target="_blank">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> Ver mi weblink
+      </a>
+      <button class="btn-secondary" id="btn-logout">Salir</button>
+    </div>
+  </div>
+
+  <div class="status-banner" id="status-banner"></div>
+
+  <!-- Perfil -->
+  <div class="panel">
+    <h2>Tu perfil</h2>
+    <p class="panel-sub">tusitio.com/?u=<span id="slug-display"></span></p>
+
+    <div class="avatar-row">
+      <img id="avatar-preview" class="avatar-preview hidden" alt="">
+      <div id="avatar-fallback-adm" class="avatar-fallback-adm hidden"></div>
+      <div class="avatar-actions">
+        <label class="btn-secondary" for="avatar-input" style="cursor:pointer; text-align:center;">Cambiar foto</label>
+        <input type="file" id="avatar-input" accept="image/*">
+        <span class="avatar-hint" id="avatar-hint"></span>
+      </div>
+    </div>
+
+    <label>Nombre a mostrar</label>
+    <input type="text" id="display-name-input" placeholder="Tu nombre">
+
+    <label>Biografía</label>
+    <textarea id="bio-input" placeholder="Una breve descripción sobre ti"></textarea>
+
+    <label>Color de acento</label>
+    <div class="color-row">
+      <input type="color" id="accent-input" value="#6c5ce7">
+      <span class="color-value" id="accent-value">#6c5ce7</span>
+    </div>
+  </div>
+
+  <!-- Links -->
+  <div class="panel">
+    <h2>Tus enlaces</h2>
+    <p class="panel-sub">Arrastra para reordenar. Se muestran en ese orden en tu weblink.</p>
+
+    <div class="link-form">
+      <input type="text" id="new-link-title" placeholder="Título (ej. Instagram)">
+      <input type="text" id="new-link-url" placeholder="https://...">
+      <button class="btn-secondary" id="btn-add-link">Agregar</button>
+    </div>
+
+    <div class="link-list" id="link-list"></div>
+    <p class="empty-hint hidden" id="empty-hint">Aún no tienes enlaces. Agrega el primero arriba.</p>
+  </div>
+
+  <div class="save-bar">
+    <button class="btn-primary" id="btn-guardar" style="width:auto;">Guardar cambios</button>
+  </div>
+  <div class="msg" id="save-msg" style="max-width:640px; margin-left:auto; margin-right:auto;"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ── Configuración de Supabase ──────────────────────────────
+const SUPABASE_URL = "https://tgeadluxcghynlrwtsoq.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZWFkbHV4Y2doeW5scnd0c29xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4ODMzNDMsImV4cCI6MjEwMzQ1OTM0M30.ngZRIxChZ50_FPkn0DETkUXydnt75CEt73GG7Btt8uI";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentUser = null;
+let currentProfile = null;
+let currentLinks = [];   // estado local editable
+let linksEliminados = []; // ids a borrar al guardar
+let avatarFileToUpload = null;
+
+const els = {
+  loginScreen: document.getElementById('login-screen'),
+  dashboard: document.getElementById('dashboard'),
+  loginEmail: document.getElementById('login-email'),
+  loginPassword: document.getElementById('login-password'),
+  btnLogin: document.getElementById('btn-login'),
+  loginMsg: document.getElementById('login-msg'),
+
+  statusBanner: document.getElementById('status-banner'),
+  slugDisplay: document.getElementById('slug-display'),
+  verPerfil: document.getElementById('ver-perfil'),
+  btnLogout: document.getElementById('btn-logout'),
+
+  avatarPreview: document.getElementById('avatar-preview'),
+  avatarFallback: document.getElementById('avatar-fallback-adm'),
+  avatarInput: document.getElementById('avatar-input'),
+  avatarHint: document.getElementById('avatar-hint'),
+
+  displayNameInput: document.getElementById('display-name-input'),
+  bioInput: document.getElementById('bio-input'),
+  accentInput: document.getElementById('accent-input'),
+  accentValue: document.getElementById('accent-value'),
+
+  newLinkTitle: document.getElementById('new-link-title'),
+  newLinkUrl: document.getElementById('new-link-url'),
+  btnAddLink: document.getElementById('btn-add-link'),
+  linkList: document.getElementById('link-list'),
+  emptyHint: document.getElementById('empty-hint'),
+
+  btnGuardar: document.getElementById('btn-guardar'),
+  saveMsg: document.getElementById('save-msg'),
+};
+
+function mostrarMsg(el, texto, tipo) {
+  el.textContent = texto;
+  el.className = `msg show ${tipo}`;
+  setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+// ── Login ──────────────────────────────
+els.btnLogin.addEventListener('click', async () => {
+  els.btnLogin.disabled = true;
+  els.btnLogin.textContent = 'Entrando…';
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email: els.loginEmail.value.trim(),
+    password: els.loginPassword.value,
+  });
+
+  if (error) {
+    mostrarMsg(els.loginMsg, error.message, 'err');
+    els.btnLogin.disabled = false;
+    els.btnLogin.textContent = 'Iniciar sesión';
+    return;
+  }
+
+  await cargarDashboard();
+});
+
+els.btnLogout.addEventListener('click', async () => {
+  await supabase.auth.signOut();
+  window.location.reload();
+});
+
+// ── Carga del dashboard ──────────────────────────────
+async function cargarDashboard() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    els.loginScreen.classList.remove('hidden');
+    els.dashboard.classList.add('hidden');
+    return;
+  }
+  currentUser = user;
+
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (error || !profile) {
+    // No tiene perfil (no debería pasar si se registró bien) → mandarlo a registro
+    window.location.href = 'registro.html';
+    return;
+  }
+  currentProfile = profile;
+
+  const { data: links } = await supabase
+    .from('links')
+    .select('*')
+    .eq('profile_id', user.id)
+    .order('sort_order', { ascending: true });
+  currentLinks = links || [];
+
+  pintarPerfil();
+  pintarLinks();
+
+  els.loginScreen.classList.add('hidden');
+  els.dashboard.classList.remove('hidden');
+}
+
+function pintarPerfil() {
+  const statusMap = {
+    pendiente: { texto: 'Tu cuenta está en revisión. Tu weblink no será visible hasta ser aprobada.', icon: 'fa-clock' },
+    aprobado: { texto: 'Tu weblink está activa y visible al público.', icon: 'fa-circle-check' },
+    rechazado: { texto: 'Tu cuenta fue rechazada. Contacta al administrador para más información.', icon: 'fa-circle-xmark' },
+  };
+  const s = statusMap[currentProfile.status] || statusMap.pendiente;
+  els.statusBanner.className = `status-banner ${currentProfile.status}`;
+  els.statusBanner.innerHTML = `<i class="fa-solid ${s.icon}"></i> ${s.texto}`;
+
+  els.slugDisplay.textContent = currentProfile.slug;
+  els.verPerfil.href = `index.html?u=${encodeURIComponent(currentProfile.slug)}`;
+
+  els.displayNameInput.value = currentProfile.display_name || '';
+  els.bioInput.value = currentProfile.bio || '';
+
+  const accent = (currentProfile.theme && currentProfile.theme.accent) || '#6c5ce7';
+  els.accentInput.value = accent;
+  els.accentValue.textContent = accent;
+
+  if (currentProfile.avatar_url) {
+    els.avatarPreview.src = currentProfile.avatar_url;
+    els.avatarPreview.classList.remove('hidden');
+    els.avatarFallback.classList.add('hidden');
+  } else {
+    const inicial = (currentProfile.display_name || currentProfile.slug || '?').trim().charAt(0).toUpperCase();
+    els.avatarFallback.textContent = inicial;
+    els.avatarFallback.classList.remove('hidden');
+    els.avatarPreview.classList.add('hidden');
+  }
+}
+
+els.accentInput.addEventListener('input', () => {
+  els.accentValue.textContent = els.accentInput.value;
+});
+
+// ── Avatar: selección y preview local ──────────────────────────────
+els.avatarInput.addEventListener('change', () => {
+  const file = els.avatarInput.files[0];
+  if (!file) return;
+
+  if (file.size > 3 * 1024 * 1024) {
+    els.avatarHint.textContent = 'La imagen debe pesar menos de 3MB';
+    els.avatarHint.style.color = 'var(--err)';
+    return;
+  }
+
+  avatarFileToUpload = file;
+  els.avatarHint.textContent = 'Se subirá al guardar cambios';
+  els.avatarHint.style.color = 'var(--accent)';
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    els.avatarPreview.src = e.target.result;
+    els.avatarPreview.classList.remove('hidden');
+    els.avatarFallback.classList.add('hidden');
+  };
+  reader.readAsDataURL(file);
+});
+
+// ── Links: agregar ──────────────────────────────
+els.btnAddLink.addEventListener('click', () => {
+  const title = els.newLinkTitle.value.trim();
+  let url = els.newLinkUrl.value.trim();
+  if (!title || !url) return;
+
+  if (!/^https?:\/\//i.test(url)) {
+    url = 'https://' + url;
+  }
+
+  currentLinks.push({
+    id: 'temp-' + Date.now(), // id temporal, se reemplaza al insertar
+    title,
+    url,
+    active: true,
+    sort_order: currentLinks.length,
+    _isNew: true,
+  });
+
+  els.newLinkTitle.value = '';
+  els.newLinkUrl.value = '';
+  pintarLinks();
+});
+
+// ── Links: pintar lista con drag & drop ──────────────────────────────
+function pintarLinks() {
+  els.linkList.innerHTML = '';
+  els.emptyHint.classList.toggle('hidden', currentLinks.length > 0);
+
+  currentLinks.forEach((link, index) => {
+    const row = document.createElement('div');
+    row.className = 'link-row';
+    row.draggable = true;
+    row.dataset.index = index;
+
+    row.innerHTML = `
+      <span class="grip"><i class="fa-solid fa-grip-vertical"></i></span>
+      <div class="link-info">
+        <div class="lt">${escapeHtml(link.title)}</div>
+        <div class="lu">${escapeHtml(link.url)}</div>
+      </div>
+      <div class="link-row-actions">
+        <div class="toggle ${link.active ? 'on' : ''}" data-action="toggle" data-index="${index}">
+          <div class="dot"></div>
+        </div>
+        <button class="btn-danger" data-action="delete" data-index="${index}">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    `;
+
+    row.addEventListener('dragstart', () => row.classList.add('dragging'));
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging');
+      reordenarDesdeDOM();
+    });
+    row.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const dragging = els.linkList.querySelector('.dragging');
+      if (!dragging || dragging === row) return;
+      const rect = row.getBoundingClientRect();
+      const after = (e.clientY - rect.top) > rect.height / 2;
+      row.parentNode.insertBefore(dragging, after ? row.nextSibling : row);
+    });
+
+    els.linkList.appendChild(row);
+  });
+}
+
+function reordenarDesdeDOM() {
+  const nuevoOrden = [...els.linkList.querySelectorAll('.link-row')].map(row => parseInt(row.dataset.index));
+  currentLinks = nuevoOrden.map((idx, nuevaPos) => {
+    const item = currentLinks[idx];
+    item.sort_order = nuevaPos;
+    return item;
+  });
+  pintarLinks();
+}
+
+els.linkList.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const index = parseInt(btn.dataset.index);
+  const action = btn.dataset.action;
+
+  if (action === 'toggle') {
+    currentLinks[index].active = !currentLinks[index].active;
+    pintarLinks();
+  } else if (action === 'delete') {
+    const link = currentLinks[index];
+    if (!link._isNew) linksEliminados.push(link.id);
+    currentLinks.splice(index, 1);
+    currentLinks.forEach((l, i) => l.sort_order = i);
+    pintarLinks();
+  }
+});
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ── Guardar todo ──────────────────────────────
+els.btnGuardar.addEventListener('click', async () => {
+  els.btnGuardar.disabled = true;
+  els.btnGuardar.textContent = 'Guardando…';
+
+  try {
+    // 1) Subir avatar si hay uno nuevo
+    let avatarUrl = currentProfile.avatar_url;
+    if (avatarFileToUpload) {
+      const ext = avatarFileToUpload.name.split('.').pop();
+      const path = `${currentUser.id}/avatar.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(path, avatarFileToUpload, { upsert: true });
+
+      if (uploadError) throw new Error('Error subiendo la foto: ' + uploadError.message);
+
+      const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(path);
+      avatarUrl = publicUrlData.publicUrl + '?t=' + Date.now(); // cache-busting
+    }
+
+    // 2) Actualizar perfil
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        display_name: els.displayNameInput.value.trim(),
+        bio: els.bioInput.value.trim(),
+        avatar_url: avatarUrl,
+        theme: { accent: els.accentInput.value },
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', currentUser.id);
+
+    if (profileError) throw new Error('Error guardando perfil: ' + profileError.message);
+
+    // 3) Borrar links eliminados
+    if (linksEliminados.length > 0) {
+      const { error: delError } = await supabase
+        .from('links')
+        .delete()
+        .in('id', linksEliminados);
+      if (delError) throw new Error('Error eliminando enlaces: ' + delError.message);
+    }
+
+    // 4) Insertar links nuevos y actualizar existentes
+    for (const link of currentLinks) {
+      if (link._isNew) {
+        const { error: insError } = await supabase.from('links').insert({
+          profile_id: currentUser.id,
+          title: link.title,
+          url: link.url,
+          active: link.active,
+          sort_order: link.sort_order,
+        });
+        if (insError) throw new Error('Error creando enlace: ' + insError.message);
+      } else {
+        const { error: updError } = await supabase.from('links')
+          .update({ active: link.active, sort_order: link.sort_order })
+          .eq('id', link.id);
+        if (updError) throw new Error('Error actualizando enlace: ' + updError.message);
+      }
+    }
+
+    linksEliminados = [];
+    avatarFileToUpload = null;
+    els.avatarHint.textContent = '';
+
+    mostrarMsg(els.saveMsg, 'Cambios guardados correctamente', 'ok');
+    await cargarDashboard();
+
+  } catch (err) {
+    mostrarMsg(els.saveMsg, err.message, 'err');
+  } finally {
+    els.btnGuardar.disabled = false;
+    els.btnGuardar.textContent = 'Guardar cambios';
+  }
+});
+
+// ── Inicio ──────────────────────────────
+(async function init() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    await cargarDashboard();
+  }
+})();
+</script>
+
+</body>
+</html>

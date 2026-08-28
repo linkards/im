@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crea tu weblink</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --card: #171a21;
+    --border: #2a2e38;
+    --text: #f2f3f5;
+    --muted: #9aa0ab;
+    --accent: #6c5ce7;
+    --accent-hover: #5b4bd4;
+    --ok: #2ecc71;
+    --err: #e74c3c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 20px;
+  }
+  .card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+  }
+  h1 {
+    font-size: 22px;
+    margin: 0 0 6px;
+  }
+  p.subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0 0 24px;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    margin: 16px 0 6px;
+  }
+  .slug-wrap {
+    display: flex;
+    align-items: center;
+    background: #0d0f14;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0 12px;
+  }
+  .slug-wrap span {
+    color: var(--muted);
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    padding: 12px 8px;
+    font-size: 14px;
+  }
+  input.standalone {
+    background: #0d0f14;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+  }
+  .slug-status {
+    font-size: 12px;
+    margin-top: 6px;
+    min-height: 16px;
+  }
+  .slug-status.ok { color: var(--ok); }
+  .slug-status.err { color: var(--err); }
+  .slug-status.checking { color: var(--muted); }
+  button {
+    width: 100%;
+    padding: 13px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  button.primary {
+    background: var(--accent);
+    color: white;
+  }
+  button.primary:hover { background: var(--accent-hover); }
+  button.primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .msg {
+    font-size: 13px;
+    text-align: center;
+    margin-top: 16px;
+    padding: 10px;
+    border-radius: 8px;
+    display: none;
+  }
+  .msg.show { display: block; }
+  .msg.err { background: rgba(231,76,60,0.12); color: var(--err); }
+  .msg.ok { background: rgba(46,204,113,0.12); color: var(--ok); }
+  .hidden { display: none !important; }
+  .success-box {
+    text-align: center;
+    padding: 12px 0;
+  }
+  .success-box .icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- ESTADO: cargando sesión -->
+  <div id="loading">
+    <p class="subtitle">Cargando…</p>
+  </div>
+
+  <!-- ESTADO 1: formulario completo (sin sesión) -->
+  <div id="form-completo" class="hidden">
+    <h1>Crea tu weblink</h1>
+    <p class="subtitle">Elige tu usuario y crea tu cuenta</p>
+
+    <label>Tu enlace</label>
+    <div class="slug-wrap">
+      <span id="slug-prefix">tusitio.com/?u=</span>
+      <input type="text" id="slug-input" placeholder="tu-nombre" autocomplete="off">
+    </div>
+    <div class="slug-status" id="slug-status"></div>
+
+    <label>Correo electrónico</label>
+    <input class="standalone" type="email" id="email-input" placeholder="tucorreo@ejemplo.com">
+
+    <label>Contraseña</label>
+    <input class="standalone" type="password" id="password-input" placeholder="Mínimo 6 caracteres">
+
+    <button class="primary" id="btn-registro-email" disabled>Crear cuenta</button>
+
+    <div class="msg" id="form-msg"></div>
+  </div>
+
+  <!-- ESTADO 3: éxito, en revisión -->
+  <div id="success" class="hidden">
+    <div class="success-box">
+      <div class="icon">⏳</div>
+      <h1>¡Cuenta creada!</h1>
+      <p class="subtitle">Tu weblink <strong id="success-slug"></strong> está en revisión.<br>Te avisaremos cuando sea aprobada.</p>
+    </div>
+  </div>
+
+  <!-- ESTADO 4: ya tiene cuenta -->
+  <div id="ya-registrado" class="hidden">
+    <div class="success-box">
+      <div class="icon">✅</div>
+      <h1>Ya tienes una cuenta</h1>
+      <p class="subtitle">Ve a tu panel de administración para editar tu weblink.</p>
+      <button class="primary" onclick="window.location.href='admin.html'">Ir a mi panel</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ── Configuración de Supabase ──────────────────────────────
+const SUPABASE_URL = "https://tgeadluxcghynlrwtsoq.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZWFkbHV4Y2doeW5scnd0c29xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4ODMzNDMsImV4cCI6MjEwMzQ1OTM0M30.ngZRIxChZ50_FPkn0DETkUXydnt75CEt73GG7Btt8uI";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── Referencias UI ──────────────────────────────
+const els = {
+  loading: document.getElementById('loading'),
+  formCompleto: document.getElementById('form-completo'),
+  success: document.getElementById('success'),
+  yaRegistrado: document.getElementById('ya-registrado'),
+
+  slugInput: document.getElementById('slug-input'),
+  slugStatus: document.getElementById('slug-status'),
+  emailInput: document.getElementById('email-input'),
+  passwordInput: document.getElementById('password-input'),
+  btnRegistroEmail: document.getElementById('btn-registro-email'),
+  formMsg: document.getElementById('form-msg'),
+
+  successSlug: document.getElementById('success-slug'),
+};
+
+function showOnly(id) {
+  ['loading','formCompleto','success','yaRegistrado'].forEach(k => {
+    els[k].classList.toggle('hidden', k !== id);
+  });
+}
+
+// ── Validación de slug ──────────────────────────────
+const SLUG_REGEX = /^[a-z0-9]([a-z0-9-]{1,28}[a-z0-9])?$/; // 3-30 chars, minúsculas, números, guiones
+
+function normalizarSlug(v) {
+  return v.toLowerCase().replace(/[^a-z0-9-]/g, '');
+}
+
+let slugCheckTimeout = null;
+let slugValido = false;
+
+function validarSlug(input, statusEl, boton) {
+  const valor = normalizarSlug(input.value);
+  input.value = valor;
+
+  clearTimeout(slugCheckTimeout);
+  slugValido = false;
+  boton.disabled = true;
+
+  if (!valor) {
+    statusEl.textContent = '';
+    statusEl.className = 'slug-status';
+    return;
+  }
+
+  if (!SLUG_REGEX.test(valor)) {
+    statusEl.textContent = 'Entre 3 y 30 caracteres: minúsculas, números y guiones';
+    statusEl.className = 'slug-status err';
+    return;
+  }
+
+  statusEl.textContent = 'Verificando disponibilidad…';
+  statusEl.className = 'slug-status checking';
+
+  slugCheckTimeout = setTimeout(async () => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('slug', valor)
+      .maybeSingle();
+
+    if (error) {
+      statusEl.textContent = 'Error al verificar, intenta de nuevo';
+      statusEl.className = 'slug-status err';
+      return;
+    }
+
+    if (data) {
+      statusEl.textContent = 'Ese nombre ya está ocupado';
+      statusEl.className = 'slug-status err';
+      slugValido = false;
+    } else {
+      statusEl.textContent = '✓ Disponible';
+      statusEl.className = 'slug-status ok';
+      slugValido = true;
+      boton.disabled = !camposCompletos();
+    }
+  }, 400);
+}
+
+function camposCompletos() {
+  return slugValido && els.emailInput.value.includes('@') && els.passwordInput.value.length >= 6;
+}
+
+els.slugInput.addEventListener('input', () => validarSlug(els.slugInput, els.slugStatus, els.btnRegistroEmail));
+els.emailInput.addEventListener('input', () => { els.btnRegistroEmail.disabled = !camposCompletos(); });
+els.passwordInput.addEventListener('input', () => { els.btnRegistroEmail.disabled = !camposCompletos(); });
+
+function mostrarMsg(el, texto, tipo) {
+  el.textContent = texto;
+  el.className = `msg show ${tipo}`;
+}
+
+// ── Registro con email/contraseña ──────────────────────────────
+els.btnRegistroEmail.addEventListener('click', async () => {
+  els.btnRegistroEmail.disabled = true;
+  els.btnRegistroEmail.textContent = 'Creando cuenta…';
+
+  const slug = els.slugInput.value;
+  const email = els.emailInput.value.trim();
+  const password = els.passwordInput.value;
+
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+
+  if (signUpError) {
+    mostrarMsg(els.formMsg, signUpError.message, 'err');
+    els.btnRegistroEmail.disabled = false;
+    els.btnRegistroEmail.textContent = 'Crear cuenta';
+    return;
+  }
+
+  const userId = signUpData.user?.id;
+  if (!userId) {
+    mostrarMsg(els.formMsg, 'Revisa tu correo para confirmar tu cuenta antes de continuar.', 'ok');
+    els.btnRegistroEmail.textContent = 'Crear cuenta';
+    return;
+  }
+
+  const { error: profileError } = await supabase.from('profiles').insert({
+    id: userId,
+    slug: slug,
+    display_name: slug,
+  });
+
+  if (profileError) {
+    mostrarMsg(els.formMsg, 'Cuenta creada, pero hubo un error guardando tu perfil: ' + profileError.message, 'err');
+    els.btnRegistroEmail.disabled = false;
+    els.btnRegistroEmail.textContent = 'Crear cuenta';
+    return;
+  }
+
+  els.successSlug.textContent = 'tusitio.com/?u=' + slug;
+  showOnly('success');
+});
+
+// ── Lógica inicial: detectar si ya hay una cuenta creada ──────────────────────────────
+async function init() {
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session) {
+    showOnly('formCompleto');
+    return;
+  }
+
+  // Ya hay sesión activa: si tiene perfil, mandarlo a su panel
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id, slug')
+    .eq('id', session.user.id)
+    .maybeSingle();
+
+  if (profile) {
+    showOnly('yaRegistrado');
+  } else {
+    // Sesión sin perfil (caso raro): dejamos ver el formulario para que complete su registro
+    showOnly('formCompleto');
+  }
+}
+
+init();
+</script>
+
+</body>
+</html>
