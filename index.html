@@ -241,6 +241,12 @@
   <p>El enlace no existe o todavía no ha sido aprobado.</p>
 </div>
 
+<div id="load-error" class="state-screen hidden">
+  <div class="glyph"><i class="fa-solid fa-triangle-exclamation"></i></div>
+  <h1>No se pudo cargar</h1>
+  <p id="load-error-detail">Hubo un problema de conexión. Intenta recargar la página.</p>
+</div>
+
 <div id="profile-wrap" class="wrap hidden">
   <div class="aura-stage">
     <div class="aura" id="aura"></div>
@@ -270,6 +276,8 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const els = {
   loading: document.getElementById('loading'),
   notFound: document.getElementById('not-found'),
+  loadError: document.getElementById('load-error'),
+  loadErrorDetail: document.getElementById('load-error-detail'),
   profileWrap: document.getElementById('profile-wrap'),
   aura: document.getElementById('aura'),
   avatarImg: document.getElementById('avatar-img'),
@@ -280,9 +288,16 @@ const els = {
 };
 
 function showState(id) {
-  ['loading', 'notFound', 'profileWrap'].forEach(k => {
+  ['loading', 'notFound', 'profileWrap', 'loadError'].forEach(k => {
     els[k].classList.toggle('hidden', k !== id);
   });
+}
+
+function conTimeout(promesa, ms, etiqueta) {
+  return Promise.race([
+    promesa,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`Tiempo de espera agotado (${etiqueta})`)), ms))
+  ]);
 }
 
 // Íconos por dominio conocido, con genérico de respaldo
@@ -316,59 +331,78 @@ function aplicarTema(theme) {
 }
 
 async function init() {
-  const params = new URLSearchParams(window.location.search);
-  const slug = params.get('u');
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get('u');
 
-  if (!slug) {
-    showState('notFound');
-    return;
+    if (!slug) {
+      showState('notFound');
+      return;
+    }
+
+    const { data: profile, error } = await conTimeout(
+      supabase
+        .from('profiles')
+        .select('id, slug, display_name, bio, avatar_url, theme, status')
+        .eq('slug', slug)
+        .eq('status', 'aprobado')
+        .maybeSingle(),
+      10000,
+      'perfil'
+    );
+
+    if (error) throw new Error(error.message || 'Error consultando el perfil');
+
+    if (!profile) {
+      showState('notFound');
+      return;
+    }
+
+    aplicarTema(profile.theme);
+
+    els.name.textContent = profile.display_name || profile.slug;
+    els.bio.textContent = profile.bio || '';
+    els.bio.classList.toggle('hidden', !profile.bio);
+
+    if (profile.avatar_url) {
+      els.avatarImg.src = profile.avatar_url;
+      els.avatarImg.classList.remove('hidden');
+    } else {
+      const inicial = (profile.display_name || profile.slug || '?').trim().charAt(0).toUpperCase();
+      els.avatarFallback.textContent = inicial;
+      els.avatarFallback.classList.remove('hidden');
+    }
+
+    const { data: links, error: linksError } = await conTimeout(
+      supabase
+        .from('links')
+        .select('id, title, url, icon')
+        .eq('profile_id', profile.id)
+        .eq('active', true)
+        .order('sort_order', { ascending: true }),
+      10000,
+      'enlaces'
+    );
+
+    if (linksError) throw new Error(linksError.message || 'Error consultando los enlaces');
+
+    if (links && links.length) {
+      els.links.innerHTML = links.map(link => `
+        <a class="link-card" href="${link.url}" target="_blank" rel="noopener noreferrer">
+          <span class="link-icon"><i class="${link.icon || iconForUrl(link.url)}"></i></span>
+          <span class="link-title">${link.title}</span>
+          <span class="link-go"><i class="fa-solid fa-chevron-right"></i></span>
+        </a>
+      `).join('');
+    }
+
+    showState('profileWrap');
+
+  } catch (err) {
+    console.error('Error cargando el perfil:', err);
+    els.loadErrorDetail.textContent = err.message || 'Hubo un problema de conexión. Intenta recargar la página.';
+    showState('loadError');
   }
-
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('id, slug, display_name, bio, avatar_url, theme, status')
-    .eq('slug', slug)
-    .eq('status', 'aprobado')
-    .maybeSingle();
-
-  if (error || !profile) {
-    showState('notFound');
-    return;
-  }
-
-  aplicarTema(profile.theme);
-
-  els.name.textContent = profile.display_name || profile.slug;
-  els.bio.textContent = profile.bio || '';
-  els.bio.classList.toggle('hidden', !profile.bio);
-
-  if (profile.avatar_url) {
-    els.avatarImg.src = profile.avatar_url;
-    els.avatarImg.classList.remove('hidden');
-  } else {
-    const inicial = (profile.display_name || profile.slug || '?').trim().charAt(0).toUpperCase();
-    els.avatarFallback.textContent = inicial;
-    els.avatarFallback.classList.remove('hidden');
-  }
-
-  const { data: links } = await supabase
-    .from('links')
-    .select('id, title, url, icon')
-    .eq('profile_id', profile.id)
-    .eq('active', true)
-    .order('sort_order', { ascending: true });
-
-  if (links && links.length) {
-    els.links.innerHTML = links.map(link => `
-      <a class="link-card" href="${link.url}" target="_blank" rel="noopener noreferrer">
-        <span class="link-icon"><i class="${link.icon || iconForUrl(link.url)}"></i></span>
-        <span class="link-title">${link.title}</span>
-        <span class="link-go"><i class="fa-solid fa-chevron-right"></i></span>
-      </a>
-    `).join('');
-  }
-
-  showState('profileWrap');
 }
 
 init();

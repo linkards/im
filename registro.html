@@ -179,6 +179,15 @@
     </div>
   </div>
 
+  <!-- ESTADO 5: error de carga -->
+  <div id="load-error" class="hidden">
+    <div class="success-box">
+      <div class="icon">⚠️</div>
+      <h1>No se pudo cargar</h1>
+      <p class="subtitle" id="load-error-detail">Hubo un problema de conexión. Intenta recargar la página.</p>
+    </div>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -194,6 +203,8 @@ const els = {
   formCompleto: document.getElementById('form-completo'),
   success: document.getElementById('success'),
   yaRegistrado: document.getElementById('ya-registrado'),
+  loadError: document.getElementById('load-error'),
+  loadErrorDetail: document.getElementById('load-error-detail'),
 
   slugInput: document.getElementById('slug-input'),
   slugStatus: document.getElementById('slug-status'),
@@ -206,9 +217,16 @@ const els = {
 };
 
 function showOnly(id) {
-  ['loading','formCompleto','success','yaRegistrado'].forEach(k => {
+  ['loading','formCompleto','success','yaRegistrado','loadError'].forEach(k => {
     els[k].classList.toggle('hidden', k !== id);
   });
+}
+
+function conTimeout(promesa, ms, etiqueta) {
+  return Promise.race([
+    promesa,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`Tiempo de espera agotado (${etiqueta})`)), ms))
+  ]);
 }
 
 // ── Validación de slug ──────────────────────────────
@@ -327,25 +345,33 @@ els.btnRegistroEmail.addEventListener('click', async () => {
 
 // ── Lógica inicial: detectar si ya hay una cuenta creada ──────────────────────────────
 async function init() {
-  const { data: { session } } = await supabase.auth.getSession();
+  try {
+    const { data: { session } } = await conTimeout(supabase.auth.getSession(), 10000, 'sesión');
 
-  if (!session) {
-    showOnly('formCompleto');
-    return;
-  }
+    if (!session) {
+      showOnly('formCompleto');
+      return;
+    }
 
-  // Ya hay sesión activa: si tiene perfil, mandarlo a su panel
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('id, slug')
-    .eq('id', session.user.id)
-    .maybeSingle();
+    // Ya hay sesión activa: si tiene perfil, mandarlo a su panel
+    const { data: profile, error } = await conTimeout(
+      supabase.from('profiles').select('id, slug').eq('id', session.user.id).maybeSingle(),
+      10000,
+      'perfil'
+    );
 
-  if (profile) {
-    showOnly('yaRegistrado');
-  } else {
-    // Sesión sin perfil (caso raro): dejamos ver el formulario para que complete su registro
-    showOnly('formCompleto');
+    if (error) throw new Error(error.message || 'Error consultando el perfil');
+
+    if (profile) {
+      showOnly('yaRegistrado');
+    } else {
+      // Sesión sin perfil (caso raro): dejamos ver el formulario para que complete su registro
+      showOnly('formCompleto');
+    }
+  } catch (err) {
+    console.error('Error al iniciar registro.html:', err);
+    els.loadErrorDetail.textContent = err.message || 'Hubo un problema de conexión. Intenta recargar la página.';
+    showOnly('loadError');
   }
 }
 

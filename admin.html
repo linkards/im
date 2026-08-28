@@ -724,11 +724,23 @@ els.btnGuardar.addEventListener('click', async () => {
   }
 });
 
+function conTimeout(promesa, ms, etiqueta) {
+  return Promise.race([
+    promesa,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`Tiempo de espera agotado (${etiqueta})`)), ms))
+  ]);
+}
+
 // ── Inicio ──────────────────────────────
 (async function init() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session) {
-    await cargarDashboard();
+  try {
+    const { data: { session } } = await conTimeout(supabase.auth.getSession(), 10000, 'sesión');
+    if (session) {
+      await cargarDashboard();
+    }
+  } catch (err) {
+    console.error('Error al iniciar admin.html:', err);
+    mostrarMsg(els.loginMsg, 'No se pudo conectar: ' + (err.message || 'error de red'), 'err');
   }
 })();
 </script>
