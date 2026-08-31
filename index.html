@@ -272,10 +272,10 @@
 const SUPABASE_URL = "https://tgeadluxcghynlrwtsoq.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZWFkbHV4Y2doeW5scnd0c29xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4ODMzNDMsImV4cCI6MjEwMzQ1OTM0M30.ngZRIxChZ50_FPkn0DETkUXydnt75CEt73GG7Btt8uI";
 
-let supabase;
+let sb;
 try {
   if (!window.supabase) throw new Error('No se pudo cargar la librería de Supabase (CDN bloqueado o sin conexión)');
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 } catch (e) {
   document.getElementById('loading').classList.add('hidden');
   document.getElementById('load-error').classList.remove('hidden');
@@ -352,7 +352,7 @@ async function init() {
     }
 
     const { data: profile, error } = await conTimeout(
-      supabase
+      sb
         .from('profiles')
         .select('id, slug, display_name, bio, avatar_url, theme, status')
         .eq('slug', slug)
@@ -385,7 +385,7 @@ async function init() {
     }
 
     const { data: links, error: linksError } = await conTimeout(
-      supabase
+      sb
         .from('links')
         .select('id, title, url, icon')
         .eq('profile_id', profile.id)

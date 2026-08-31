@@ -196,10 +196,10 @@
 const SUPABASE_URL = "https://tgeadluxcghynlrwtsoq.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZWFkbHV4Y2doeW5scnd0c29xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4ODMzNDMsImV4cCI6MjEwMzQ1OTM0M30.ngZRIxChZ50_FPkn0DETkUXydnt75CEt73GG7Btt8uI";
 
-let supabase;
+let sb;
 try {
   if (!window.supabase) throw new Error('No se pudo cargar la librería de Supabase (CDN bloqueado o sin conexión)');
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 } catch (e) {
   document.getElementById('loading').classList.add('hidden');
   document.getElementById('load-error').classList.remove('hidden');
@@ -274,7 +274,7 @@ function validarSlug(input, statusEl, boton) {
   statusEl.className = 'slug-status checking';
 
   slugCheckTimeout = setTimeout(async () => {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('profiles')
       .select('id')
       .eq('slug', valor)
@@ -321,7 +321,7 @@ els.btnRegistroEmail.addEventListener('click', async () => {
   const email = els.emailInput.value.trim();
   const password = els.passwordInput.value;
 
-  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+  const { data: signUpData, error: signUpError } = await sb.auth.signUp({ email, password });
 
   if (signUpError) {
     mostrarMsg(els.formMsg, signUpError.message, 'err');
@@ -337,7 +337,7 @@ els.btnRegistroEmail.addEventListener('click', async () => {
     return;
   }
 
-  const { error: profileError } = await supabase.from('profiles').insert({
+  const { error: profileError } = await sb.from('profiles').insert({
     id: userId,
     slug: slug,
     display_name: slug,
@@ -357,7 +357,7 @@ els.btnRegistroEmail.addEventListener('click', async () => {
 // ── Lógica inicial: detectar si ya hay una cuenta creada ──────────────────────────────
 async function init() {
   try {
-    const { data: { session } } = await conTimeout(supabase.auth.getSession(), 10000, 'sesión');
+    const { data: { session } } = await conTimeout(sb.auth.getSession(), 10000, 'sesión');
 
     if (!session) {
       showOnly('formCompleto');
@@ -366,7 +366,7 @@ async function init() {
 
     // Ya hay sesión activa: si tiene perfil, mandarlo a su panel
     const { data: profile, error } = await conTimeout(
-      supabase.from('profiles').select('id, slug').eq('id', session.user.id).maybeSingle(),
+      sb.from('profiles').select('id, slug').eq('id', session.user.id).maybeSingle(),
       10000,
       'perfil'
     );

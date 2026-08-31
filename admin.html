@@ -374,10 +374,10 @@
 const SUPABASE_URL = "https://tgeadluxcghynlrwtsoq.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZWFkbHV4Y2doeW5scnd0c29xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4ODMzNDMsImV4cCI6MjEwMzQ1OTM0M30.ngZRIxChZ50_FPkn0DETkUXydnt75CEt73GG7Btt8uI";
 
-let supabase;
+let sb;
 try {
   if (!window.supabase) throw new Error('No se pudo cargar la librería de Supabase (CDN bloqueado o sin conexión)');
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 } catch (e) {
   console.error(e);
   document.getElementById('login-msg').textContent = e.message;
@@ -435,7 +435,7 @@ els.btnLogin.addEventListener('click', async () => {
   els.btnLogin.disabled = true;
   els.btnLogin.textContent = 'Entrando…';
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { error } = await sb.auth.signInWithPassword({
     email: els.loginEmail.value.trim(),
     password: els.loginPassword.value,
   });
@@ -451,13 +451,13 @@ els.btnLogin.addEventListener('click', async () => {
 });
 
 els.btnLogout.addEventListener('click', async () => {
-  await supabase.auth.signOut();
+  await sb.auth.signOut();
   window.location.reload();
 });
 
 // ── Carga del dashboard ──────────────────────────────
 async function cargarDashboard() {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await sb.auth.getUser();
   if (!user) {
     els.loginScreen.classList.remove('hidden');
     els.dashboard.classList.add('hidden');
@@ -465,7 +465,7 @@ async function cargarDashboard() {
   }
   currentUser = user;
 
-  const { data: profile, error } = await supabase
+  const { data: profile, error } = await sb
     .from('profiles')
     .select('*')
     .eq('id', user.id)
@@ -478,7 +478,7 @@ async function cargarDashboard() {
   }
   currentProfile = profile;
 
-  const { data: links } = await supabase
+  const { data: links } = await sb
     .from('links')
     .select('*')
     .eq('profile_id', user.id)
@@ -667,18 +667,18 @@ els.btnGuardar.addEventListener('click', async () => {
       const ext = avatarFileToUpload.name.split('.').pop();
       const path = `${currentUser.id}/avatar.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await sb.storage
         .from('avatars')
         .upload(path, avatarFileToUpload, { upsert: true });
 
       if (uploadError) throw new Error('Error subiendo la foto: ' + uploadError.message);
 
-      const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(path);
+      const { data: publicUrlData } = sb.storage.from('avatars').getPublicUrl(path);
       avatarUrl = publicUrlData.publicUrl + '?t=' + Date.now(); // cache-busting
     }
 
     // 2) Actualizar perfil
-    const { error: profileError } = await supabase
+    const { error: profileError } = await sb
       .from('profiles')
       .update({
         display_name: els.displayNameInput.value.trim(),
@@ -693,7 +693,7 @@ els.btnGuardar.addEventListener('click', async () => {
 
     // 3) Borrar links eliminados
     if (linksEliminados.length > 0) {
-      const { error: delError } = await supabase
+      const { error: delError } = await sb
         .from('links')
         .delete()
         .in('id', linksEliminados);
@@ -703,7 +703,7 @@ els.btnGuardar.addEventListener('click', async () => {
     // 4) Insertar links nuevos y actualizar existentes
     for (const link of currentLinks) {
       if (link._isNew) {
-        const { error: insError } = await supabase.from('links').insert({
+        const { error: insError } = await sb.from('links').insert({
           profile_id: currentUser.id,
           title: link.title,
           url: link.url,
@@ -712,7 +712,7 @@ els.btnGuardar.addEventListener('click', async () => {
         });
         if (insError) throw new Error('Error creando enlace: ' + insError.message);
       } else {
-        const { error: updError } = await supabase.from('links')
+        const { error: updError } = await sb.from('links')
           .update({ active: link.active, sort_order: link.sort_order })
           .eq('id', link.id);
         if (updError) throw new Error('Error actualizando enlace: ' + updError.message);
@@ -744,7 +744,7 @@ function conTimeout(promesa, ms, etiqueta) {
 // ── Inicio ──────────────────────────────
 (async function init() {
   try {
-    const { data: { session } } = await conTimeout(supabase.auth.getSession(), 10000, 'sesión');
+    const { data: { session } } = await conTimeout(sb.auth.getSession(), 10000, 'sesión');
     if (session) {
       await cargarDashboard();
     }
