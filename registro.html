@@ -192,10 +192,26 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  if (!window.supabase) {
+    document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\/script>');
+  }
+</script>
+<script>
 // ── Configuración de Supabase ──────────────────────────────
 const SUPABASE_URL = "https://tgeadluxcghynlrwtsoq.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZWFkbHV4Y2doeW5scnd0c29xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4ODMzNDMsImV4cCI6MjEwMzQ1OTM0M30.ngZRIxChZ50_FPkn0DETkUXydnt75CEt73GG7Btt8uI";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let supabase;
+try {
+  if (!window.supabase) throw new Error('No se pudo cargar la librería de Supabase (CDN bloqueado o sin conexión)');
+  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (e) {
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('load-error').classList.remove('hidden');
+  document.getElementById('load-error-detail').textContent = e.message;
+  console.error(e);
+  throw e;
+}
 
 // ── Referencias UI ──────────────────────────────
 const els = {
