@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aprobaciones</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --accent: #6c5ce7;
+    --bg: #0e0e13;
+    --surface: #17171f;
+    --surface-2: #1e1e28;
+    --border: #2a2a36;
+    --text: #f2f2f5;
+    --muted: #9091a3;
+    --ok: #2ecc71;
+    --warn: #f59e0b;
+    --err: #e74c3c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    min-height: 100vh;
+  }
+  .hidden { display: none !important; }
+
+  /* ── Login (idéntico al de admin.html) ── */
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .login-card {
+    width: 100%;
+    max-width: 380px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+  }
+  .login-card h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    margin: 0 0 4px;
+  }
+  .login-card p.subtitle { color: var(--muted); font-size: 13px; margin: 0 0 22px; }
+
+  label { display: block; font-size: 13px; color: var(--muted); margin: 14px 0 6px; }
+  input[type=email], input[type=password] {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 12px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+  }
+  input:focus { border-color: var(--accent); }
+
+  button {
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    padding: 12px;
+    width: 100%;
+    margin-top: 20px;
+  }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary {
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 9px 14px;
+  }
+  .btn-ok {
+    background: rgba(46,204,113,0.15);
+    color: var(--ok);
+    padding: 8px 14px;
+  }
+  .btn-ok:hover { background: rgba(46,204,113,0.28); }
+  .btn-err {
+    background: rgba(231,76,60,0.15);
+    color: var(--err);
+    padding: 8px 14px;
+  }
+  .btn-err:hover { background: rgba(231,76,60,0.28); }
+
+  .msg { font-size: 13px; margin-top: 14px; padding: 10px; border-radius: 8px; display: none; text-align: center; }
+  .msg.show { display: block; }
+  .msg.err { background: rgba(231,76,60,0.12); color: var(--err); }
+  .msg.ok { background: rgba(46,204,113,0.12); color: var(--ok); }
+
+  /* ── No autorizado ── */
+  #not-authorized {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+    padding: 20px;
+  }
+  #not-authorized .glyph {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--surface); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: var(--err);
+  }
+  #not-authorized h1 { font-family: 'Space Grotesk', sans-serif; font-size: 18px; margin: 0; }
+  #not-authorized p { color: var(--muted); font-size: 14px; margin: 0; }
+
+  /* ── Dashboard ── */
+  #dashboard {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .topbar .brand {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+  }
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 9px 8px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+  }
+  .tab.active {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+  .tab .count {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .tab.active .count { color: var(--accent); }
+
+  .card-list { display: flex; flex-direction: column; gap: 10px; }
+  .profile-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .pc-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--surface-2);
+    flex-shrink: 0;
+  }
+  .pc-avatar-fallback {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 17px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .pc-info { flex: 1; min-width: 0; }
+  .pc-name { font-size: 14.5px; font-weight: 600; }
+  .pc-slug { font-size: 12.5px; color: var(--accent); }
+  .pc-bio {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pc-date { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .pc-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+  }
+  .pc-badge.pendiente { background: rgba(245,158,11,0.15); color: var(--warn); }
+  .pc-badge.aprobado { background: rgba(46,204,113,0.15); color: var(--ok); }
+  .pc-badge.rechazado { background: rgba(231,76,60,0.15); color: var(--err); }
+  .pc-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  .empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--muted);
+  }
+  .empty-state i { font-size: 26px; margin-bottom: 10px; display: block; }
+  .empty-state p { font-size: 13.5px; margin: 0; }
+
+  .spin {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 3px solid var(--border); border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite;
+    margin: 40px auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-card">
+    <h1>Panel de aprobaciones</h1>
+    <p class="subtitle">Acceso solo para administradores</p>
+
+    <label>Correo electrónico</label>
+    <input type="email" id="login-email" placeholder="tucorreo@ejemplo.com">
+
+    <label>Contraseña</label>
+    <input type="password" id="login-password" placeholder="Tu contraseña">
+
+    <button class="btn-primary" id="btn-login">Iniciar sesión</button>
+    <div class="msg" id="login-msg"></div>
+  </div>
+</div>
+
+<!-- ── NO AUTORIZADO ── -->
+<div id="not-authorized" class="hidden">
+  <div class="glyph"><i class="fa-solid fa-lock"></i></div>
+  <h1>No tienes acceso a este panel</h1>
+  <p>Tu cuenta no tiene permisos de administrador.</p>
+  <button class="btn-secondary" id="btn-logout-noauth" style="margin-top:10px;">Cerrar sesión</button>
+</div>
+
+<!-- ── DASHBOARD ── -->
+<div id="dashboard" class="hidden">
+  <div class="topbar">
+    <span class="brand">Aprobaciones</span>
+    <button class="btn-secondary" id="btn-logout">Salir</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-status="pendiente">Pendientes <span class="count" id="count-pendiente"></span></div>
+    <div class="tab" data-status="aprobado">Aprobados <span class="count" id="count-aprobado"></span></div>
+    <div class="tab" data-status="rechazado">Rechazados <span class="count" id="count-rechazado"></span></div>
+    <div class="tab" data-status="todos">Todos <span class="count" id="count-todos"></span></div>
+  </div>
+
+  <div id="list-loading" class="spin"></div>
+  <div class="card-list hidden" id="card-list"></div>
+  <div class="empty-state hidden" id="empty-state">
+    <i class="fa-solid fa-inbox"></i>
+    <p id="empty-state-text">No hay cuentas en esta categoría.</p>
+  </div>
+</div>
+
+<script src="supabase.min.js"></script>
+<script>
+// ── Configuración de Supabase ──────────────────────────────
+const SUPABASE_URL = "https://tgeadluxcghynlrwtsoq.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZWFkbHV4Y2doeW5scnd0c29xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4ODMzNDMsImV4cCI6MjEwMzQ1OTM0M30.ngZRIxChZ50_FPkn0DETkUXydnt75CEt73GG7Btt8uI";
+
+let sb;
+try {
+  if (!window.supabase) throw new Error('No se pudo cargar la librería de Supabase (CDN bloqueado o sin conexión)');
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (e) {
+  console.error(e);
+  document.getElementById('login-msg').textContent = e.message;
+  document.getElementById('login-msg').className = 'msg show err';
+  throw e;
+}
+
+let todosLosPerfiles = [];
+let tabActual = 'pendiente';
+
+const els = {
+  loginScreen: document.getElementById('login-screen'),
+  notAuthorized: document.getElementById('not-authorized'),
+  dashboard: document.getElementById('dashboard'),
+  loginEmail: document.getElementById('login-email'),
+  loginPassword: document.getElementById('login-password'),
+  btnLogin: document.getElementById('btn-login'),
+  loginMsg: document.getElementById('login-msg'),
+  btnLogout: document.getElementById('btn-logout'),
+  btnLogoutNoauth: document.getElementById('btn-logout-noauth'),
+
+  tabs: document.querySelectorAll('.tab'),
+  listLoading: document.getElementById('list-loading'),
+  cardList: document.getElementById('card-list'),
+  emptyState: document.getElementById('empty-state'),
+  emptyStateText: document.getElementById('empty-state-text'),
+};
+
+function conTimeout(promesa, ms, etiqueta) {
+  return Promise.race([
+    promesa,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`Tiempo de espera agotado (${etiqueta})`)), ms))
+  ]);
+}
+
+function mostrarMsg(el, texto, tipo) {
+  el.textContent = texto;
+  el.className = `msg show ${tipo}`;
+}
+
+// ── Login ──────────────────────────────
+els.btnLogin.addEventListener('click', async () => {
+  els.btnLogin.disabled = true;
+  els.btnLogin.textContent = 'Entrando…';
+
+  const { error } = await sb.auth.signInWithPassword({
+    email: els.loginEmail.value.trim(),
+    password: els.loginPassword.value,
+  });
+
+  if (error) {
+    mostrarMsg(els.loginMsg, error.message, 'err');
+    els.btnLogin.disabled = false;
+    els.btnLogin.textContent = 'Iniciar sesión';
+    return;
+  }
+
+  await cargarPanel();
+});
+
+els.btnLogout.addEventListener('click', cerrarSesion);
+els.btnLogoutNoauth.addEventListener('click', cerrarSesion);
+
+async function cerrarSesion() {
+  await sb.auth.signOut();
+  window.location.reload();
+}
+
+// ── Verificar acceso y cargar datos ──────────────────────────────
+async function cargarPanel() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) {
+    els.loginScreen.classList.remove('hidden');
+    return;
+  }
+
+  const { data: esAdmin, error: adminError } = await sb
+    .from('super_admins')
+    .select('user_id')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (adminError || !esAdmin) {
+    els.loginScreen.classList.add('hidden');
+    els.dashboard.classList.add('hidden');
+    els.notAuthorized.classList.remove('hidden');
+    return;
+  }
+
+  els.loginScreen.classList.add('hidden');
+  els.notAuthorized.classList.add('hidden');
+  els.dashboard.classList.remove('hidden');
+
+  await cargarPerfiles();
+}
+
+async function cargarPerfiles() {
+  els.listLoading.classList.remove('hidden');
+  els.cardList.classList.add('hidden');
+  els.emptyState.classList.add('hidden');
+
+  const { data, error } = await sb
+    .from('profiles')
+    .select('id, slug, display_name, bio, avatar_url, status, created_at')
+    .order('created_at', { ascending: false });
+
+  els.listLoading.classList.add('hidden');
+
+  if (error) {
+    els.emptyStateText.textContent = 'Error cargando cuentas: ' + error.message;
+    els.emptyState.classList.remove('hidden');
+    return;
+  }
+
+  todosLosPerfiles = data || [];
+  actualizarContadores();
+  pintarLista();
+}
+
+function actualizarContadores() {
+  const conteos = { pendiente: 0, aprobado: 0, rechazado: 0 };
+  todosLosPerfiles.forEach(p => { if (conteos[p.status] !== undefined) conteos[p.status]++; });
+  document.getElementById('count-pendiente').textContent = conteos.pendiente || '';
+  document.getElementById('count-aprobado').textContent = conteos.aprobado || '';
+  document.getElementById('count-rechazado').textContent = conteos.rechazado || '';
+  document.getElementById('count-todos').textContent = todosLosPerfiles.length || '';
+}
+
+// ── Tabs ──────────────────────────────
+els.tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    els.tabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    tabActual = tab.dataset.status;
+    pintarLista();
+  });
+});
+
+function formatearFecha(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function pintarLista() {
+  const lista = tabActual === 'todos'
+    ? todosLosPerfiles
+    : todosLosPerfiles.filter(p => p.status === tabActual);
+
+  if (lista.length === 0) {
+    els.cardList.classList.add('hidden');
+    const textos = {
+      pendiente: 'No hay cuentas pendientes de revisión.',
+      aprobado: 'Aún no hay cuentas aprobadas.',
+      rechazado: 'No hay cuentas rechazadas.',
+      todos: 'Todavía no hay ningún registro.',
+    };
+    els.emptyStateText.textContent = textos[tabActual];
+    els.emptyState.classList.remove('hidden');
+    return;
+  }
+
+  els.emptyState.classList.add('hidden');
+  els.cardList.classList.remove('hidden');
+
+  els.cardList.innerHTML = lista.map(p => {
+    const inicial = (p.display_name || p.slug || '?').trim().charAt(0).toUpperCase();
+    const avatar = p.avatar_url
+      ? `<img class="pc-avatar" src="${p.avatar_url}" alt="">`
+      : `<div class="pc-avatar-fallback">${inicial}</div>`;
+
+    let acciones = '';
+    if (p.status === 'pendiente') {
+      acciones = `
+        <button class="btn-ok" data-action="aprobar" data-id="${p.id}"><i class="fa-solid fa-check"></i> Aprobar</button>
+        <button class="btn-err" data-action="rechazar" data-id="${p.id}"><i class="fa-solid fa-xmark"></i> Rechazar</button>
+      `;
+    } else if (p.status === 'aprobado') {
+      acciones = `<button class="btn-err" data-action="rechazar" data-id="${p.id}"><i class="fa-solid fa-ban"></i> Revocar</button>`;
+    } else if (p.status === 'rechazado') {
+      acciones = `<button class="btn-ok" data-action="aprobar" data-id="${p.id}"><i class="fa-solid fa-check"></i> Aprobar</button>`;
+    }
+
+    return `
+      <div class="profile-card">
+        ${avatar}
+        <div class="pc-info">
+          <div class="pc-name">${escapeHtml(p.display_name || p.slug)}</div>
+          <div class="pc-slug">?u=${escapeHtml(p.slug)}</div>
+          ${p.bio ? `<div class="pc-bio">${escapeHtml(p.bio)}</div>` : ''}
+          <div class="pc-date">Registrado el ${formatearFecha(p.created_at)}</div>
+        </div>
+        <span class="pc-badge ${p.status}">${p.status}</span>
+        <div class="pc-actions">${acciones}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ── Aprobar / Rechazar ──────────────────────────────
+els.cardList.addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+
+  const id = btn.dataset.id;
+  const nuevoStatus = btn.dataset.action === 'aprobar' ? 'aprobado' : 'rechazado';
+
+  btn.disabled = true;
+  const textoOriginal = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+  const { error } = await sb
+    .from('profiles')
+    .update({ status: nuevoStatus })
+    .eq('id', id);
+
+  if (error) {
+    alert('Error actualizando: ' + error.message);
+    btn.disabled = false;
+    btn.innerHTML = textoOriginal;
+    return;
+  }
+
+  const perfil = todosLosPerfiles.find(p => p.id === id);
+  if (perfil) perfil.status = nuevoStatus;
+  actualizarContadores();
+  pintarLista();
+});
+
+// ── Inicio ──────────────────────────────
+(async function init() {
+  try {
+    const { data: { session } } = await conTimeout(sb.auth.getSession(), 10000, 'sesión');
+    if (session) {
+      await cargarPanel();
+    }
+  } catch (err) {
+    console.error('Error al iniciar aprobaciones.html:', err);
+    mostrarMsg(els.loginMsg, 'No se pudo conectar: ' + (err.message || 'error de red'), 'err');
+  }
+})();
+</script>
+
+</body>
+</html>

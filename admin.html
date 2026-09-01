@@ -319,6 +319,15 @@
 
   <div class="status-banner" id="status-banner"></div>
 
+  <!-- Mensaje cuando aún no está aprobado -->
+  <div class="panel hidden" id="not-approved-panel">
+    <h2>Edición no disponible</h2>
+    <p class="panel-sub" style="margin-bottom:0;">Tu cuenta debe ser aprobada para poder personalizar tu weblink, contacta a administración.</p>
+  </div>
+
+  <!-- Paneles de edición (solo visibles si status = aprobado) -->
+  <div id="editable-panels">
+
   <!-- Perfil -->
   <div class="panel">
     <h2>Tu perfil</h2>
@@ -366,6 +375,8 @@
     <button class="btn-primary" id="btn-guardar" style="width:auto;">Guardar cambios</button>
   </div>
   <div class="msg" id="save-msg" style="max-width:640px; margin-left:auto; margin-right:auto;"></div>
+
+  </div>
 </div>
 
 <script src="supabase.min.js"></script>
@@ -400,6 +411,8 @@ const els = {
   loginMsg: document.getElementById('login-msg'),
 
   statusBanner: document.getElementById('status-banner'),
+  notApprovedPanel: document.getElementById('not-approved-panel'),
+  editablePanels: document.getElementById('editable-panels'),
   slugDisplay: document.getElementById('slug-display'),
   verPerfil: document.getElementById('ver-perfil'),
   btnLogout: document.getElementById('btn-logout'),
@@ -501,6 +514,13 @@ function pintarPerfil() {
   const s = statusMap[currentProfile.status] || statusMap.pendiente;
   els.statusBanner.className = `status-banner ${currentProfile.status}`;
   els.statusBanner.innerHTML = `<i class="fa-solid ${s.icon}"></i> ${s.texto}`;
+
+  const aprobado = currentProfile.status === 'aprobado';
+  els.editablePanels.classList.toggle('hidden', !aprobado);
+  els.notApprovedPanel.classList.toggle('hidden', aprobado);
+  els.verPerfil.classList.toggle('hidden', !aprobado);
+
+  if (!aprobado) return; // no cargamos ni pintamos campos editables si no está aprobado
 
   els.slugDisplay.textContent = currentProfile.slug;
   els.verPerfil.href = `index.html?u=${encodeURIComponent(currentProfile.slug)}`;

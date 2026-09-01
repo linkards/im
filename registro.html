@@ -142,10 +142,10 @@
     <h1>Crea tu weblink</h1>
     <p class="subtitle">Elige tu usuario y crea tu cuenta</p>
 
-    <label>Tu enlace</label>
+    <label>Nombre de usuario</label>
     <div class="slug-wrap">
-      <span id="slug-prefix">tusitio.com/?u=</span>
-      <input type="text" id="slug-input" placeholder="tu-nombre" autocomplete="off">
+      <span id="slug-prefix">/</span>
+      <input type="text" id="slug-input" placeholder="tu_usuario" autocomplete="off">
     </div>
     <div class="slug-status" id="slug-status"></div>
 
@@ -350,7 +350,7 @@ els.btnRegistroEmail.addEventListener('click', async () => {
     return;
   }
 
-  els.successSlug.textContent = 'tusitio.com/?u=' + slug;
+  els.successSlug.textContent = '/' + slug;
   showOnly('success');
 });
 
