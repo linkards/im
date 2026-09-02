@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Crea tu weblink</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
   :root {
     --bg: #0f1115;
@@ -45,6 +46,16 @@
     font-size: 14px;
     margin: 0 0 24px;
   }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 12.5px;
+    margin-bottom: 16px;
+  }
+  .back-link:hover { color: var(--text); }
   label {
     display: block;
     font-size: 13px;
@@ -139,6 +150,7 @@
 
   <!-- ESTADO 1: formulario completo (sin sesión) -->
   <div id="form-completo" class="hidden">
+    <a class="back-link" href="index.html"><i class="fa-solid fa-arrow-left"></i> Volver al inicio</a>
     <h1>Crea tu weblink</h1>
     <p class="subtitle">Elige tu usuario y crea tu cuenta</p>
 

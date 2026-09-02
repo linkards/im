@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Weblink</title>
-<meta name="description" content="Tu página de enlaces.">
+<title>linkards — Tu página de enlaces</title>
+<meta name="description" content="Crea tu página de enlaces personalizada en segundos.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
@@ -21,12 +21,8 @@
     --border: #2a2a36;
     --text: #f2f2f5;
     --muted: #9091a3;
-    --btn-bg: var(--surface);
-    --btn-text: var(--text);
   }
-
   * { box-sizing: border-box; }
-
   body {
     margin: 0;
     min-height: 100vh;
@@ -36,498 +32,143 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 48px 20px 32px;
+    justify-content: center;
+    padding: 24px;
     position: relative;
     overflow-x: hidden;
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
   }
 
-  /* Capa oscura sobre imagen de fondo (intensidad configurable) */
-  #bg-overlay {
-    position: fixed;
-    inset: 0;
-    background: #000;
-    opacity: 0;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Textura de fondo sutil (solo visible sobre fondos sólidos/degradados) */
   body::before {
     content: "";
     position: fixed;
     inset: 0;
-    background-image:
-      radial-gradient(circle at 1px 1px, rgba(255,255,255,0.035) 1px, transparent 0);
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.035) 1px, transparent 0);
     background-size: 28px 28px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Halo decorativo de fondo, mismo lenguaje visual que el perfil público */
+  .glow {
+    position: fixed;
+    top: 18%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 420px;
+    height: 420px;
+    background: radial-gradient(circle, var(--accent) 0%, var(--accent-soft) 40%, transparent 70%);
+    filter: blur(60px);
+    opacity: 0.35;
     pointer-events: none;
     z-index: 0;
   }
 
   .wrap {
     width: 100%;
-    max-width: 420px;
+    max-width: 400px;
     position: relative;
     z-index: 1;
+    text-align: center;
   }
 
-  /* ── Redes sociales (fila de íconos) ── */
-  .socials {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 22px;
-  }
-  .social-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     background: var(--surface);
     border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text);
-    font-size: 16px;
-    text-decoration: none;
-    transition: transform 0.15s ease, border-color 0.15s ease;
-  }
-  .social-icon:hover {
-    transform: translateY(-2px);
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  /* ── Aura / halo detrás del avatar (elemento firma) ── */
-  .aura-stage {
-    position: relative;
-    width: 132px;
-    height: 132px;
-    margin: 0 auto 22px;
-  }
-  .aura {
-    position: absolute;
-    inset: -34px;
-    border-radius: 50%;
-    background: radial-gradient(circle, var(--accent) 0%, var(--accent-soft) 45%, transparent 72%);
-    filter: blur(6px);
-    animation: breathe 4.5s ease-in-out infinite;
-  }
-  @keyframes breathe {
-    0%, 100% { transform: scale(0.94); opacity: 0.85; }
-    50% { transform: scale(1.05); opacity: 1; }
-  }
-  .avatar {
-    position: relative;
-    width: 132px;
-    height: 132px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid var(--bg);
-    outline: 2px solid var(--accent);
-    display: block;
-    background: var(--surface-2);
-  }
-  .avatar-fallback {
-    width: 132px;
-    height: 132px;
-    border-radius: 50%;
-    border: 3px solid var(--bg);
-    outline: 2px solid var(--accent);
-    background: var(--surface-2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 44px;
-    font-weight: 600;
-    color: var(--accent);
-    position: relative;
-  }
-
-  .identity {
-    text-align: center;
-    margin-bottom: 28px;
-  }
-  .name {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 24px;
-    margin: 0 0 6px;
-    letter-spacing: -0.01em;
-  }
-  .bio {
     color: var(--muted);
-    font-size: 14.5px;
-    line-height: 1.5;
-    margin: 0;
-    padding: 0 12px;
+    font-size: 12.5px;
+    padding: 6px 14px;
+    border-radius: 30px;
+    margin-bottom: 24px;
+  }
+  .badge i { color: var(--accent); }
+
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 34px;
+    letter-spacing: -0.02em;
+    margin: 0 0 12px;
+  }
+  h1 span { color: var(--accent); }
+
+  p.tagline {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.55;
+    margin: 0 0 36px;
+    padding: 0 8px;
   }
 
-  .links {
+  .actions {
     display: flex;
     flex-direction: column;
     gap: 12px;
   }
-  .link-card {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    background: var(--btn-bg);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px 18px;
-    text-decoration: none;
-    color: var(--btn-text);
-    transition: transform 0.15s ease, border-color 0.15s ease, filter 0.15s ease;
-  }
-  .link-card:hover {
-    transform: translateY(-2px);
-    border-color: var(--accent);
-    filter: brightness(1.12);
-  }
-  .link-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 9px;
-    background: rgba(255,255,255,0.12);
+
+  .btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-    color: var(--btn-text);
+    gap: 10px;
+    padding: 15px;
+    border-radius: 12px;
     font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: transform 0.15s ease, filter 0.15s ease;
   }
-  .link-title {
-    font-size: 14.5px;
-    font-weight: 500;
-    flex: 1;
-    color: var(--btn-text);
+  .btn:hover { transform: translateY(-2px); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
   }
-  .link-go {
-    color: var(--btn-text);
-    opacity: 0.6;
-    font-size: 13px;
+  .btn-primary:hover { filter: brightness(1.08); }
+
+  .btn-secondary {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
   }
+  .btn-secondary:hover { border-color: var(--accent); }
 
   footer {
-    margin-top: 40px;
+    margin-top: 48px;
     text-align: center;
     font-size: 12px;
     color: var(--muted);
     position: relative;
     z-index: 1;
   }
-  footer a { color: var(--muted); }
-
-  /* Estados: cargando / no disponible */
-  .state-screen {
-    min-height: 60vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    gap: 14px;
-  }
-  .state-screen .glyph {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    color: var(--muted);
-  }
-  .state-screen h1 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 18px;
-    margin: 0;
-  }
-  .state-screen p {
-    color: var(--muted);
-    font-size: 14px;
-    margin: 0;
-    max-width: 280px;
-  }
-  .spin {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .hidden { display: none !important; }
-
-  @media (prefers-reduced-motion: reduce) {
-    .aura { animation: none; }
-    .link-card { transition: none; }
-  }
 </style>
 </head>
 <body>
 
-<div id="bg-overlay"></div>
+<div class="glow"></div>
 
-<div id="loading" class="state-screen">
-  <div class="spin"></div>
-</div>
+<div class="wrap">
+  <div class="badge"><i class="fa-solid fa-link"></i> Tu página de enlaces</div>
 
-<div id="not-found" class="state-screen hidden">
-  <div class="glyph"><i class="fa-solid fa-link-slash"></i></div>
-  <h1>Este perfil no está disponible</h1>
-  <p>El enlace no existe o todavía no ha sido aprobado.</p>
-</div>
+  <h1>links<span>.</span></h1>
+  <p class="tagline">Crea tu propia página de enlaces personalizada — redes sociales, proyectos y lo que quieras compartir, todo en un solo lugar.</p>
 
-<div id="load-error" class="state-screen hidden">
-  <div class="glyph"><i class="fa-solid fa-triangle-exclamation"></i></div>
-  <h1>No se pudo cargar</h1>
-  <p id="load-error-detail">Hubo un problema de conexión. Intenta recargar la página.</p>
-</div>
-
-<div id="profile-wrap" class="wrap hidden">
-  <div class="aura-stage">
-    <div class="aura" id="aura"></div>
-    <img id="avatar-img" class="avatar hidden" alt="">
-    <div id="avatar-fallback" class="avatar-fallback hidden"></div>
+  <div class="actions">
+    <a class="btn btn-primary" href="registro.html">
+      <i class="fa-solid fa-user-plus"></i> Crear mi weblink
+    </a>
+    <a class="btn btn-secondary" href="admin.html">
+      <i class="fa-solid fa-right-to-bracket"></i> Ya tengo cuenta, iniciar sesión
+    </a>
   </div>
-
-  <div class="identity">
-    <h1 class="name" id="name"></h1>
-    <p class="bio" id="bio"></p>
-  </div>
-
-  <div class="socials hidden" id="socials"></div>
-
-  <div class="links" id="links"></div>
-
-  <footer>
-    <p>Creado con weblink</p>
-  </footer>
 </div>
 
-<script src="supabase.min.js"></script>
-<script>
-// ── Configuración de Supabase ──────────────────────────────
-const SUPABASE_URL = "https://tgeadluxcghynlrwtsoq.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZWFkbHV4Y2doeW5scnd0c29xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4ODMzNDMsImV4cCI6MjEwMzQ1OTM0M30.ngZRIxChZ50_FPkn0DETkUXydnt75CEt73GG7Btt8uI";
-
-let sb;
-try {
-  if (!window.supabase) throw new Error('No se pudo cargar la librería de Supabase (CDN bloqueado o sin conexión)');
-  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-} catch (e) {
-  document.getElementById('loading').classList.add('hidden');
-  document.getElementById('load-error').classList.remove('hidden');
-  document.getElementById('load-error-detail').textContent = e.message;
-  console.error(e);
-  throw e; // detiene el resto del script de forma controlada
-}
-
-const els = {
-  loading: document.getElementById('loading'),
-  notFound: document.getElementById('not-found'),
-  loadError: document.getElementById('load-error'),
-  loadErrorDetail: document.getElementById('load-error-detail'),
-  profileWrap: document.getElementById('profile-wrap'),
-  aura: document.getElementById('aura'),
-  avatarImg: document.getElementById('avatar-img'),
-  avatarFallback: document.getElementById('avatar-fallback'),
-  name: document.getElementById('name'),
-  bio: document.getElementById('bio'),
-  socials: document.getElementById('socials'),
-  links: document.getElementById('links'),
-  bgOverlay: document.getElementById('bg-overlay'),
-};
-
-function showState(id) {
-  ['loading', 'notFound', 'profileWrap', 'loadError'].forEach(k => {
-    els[k].classList.toggle('hidden', k !== id);
-  });
-}
-
-function conTimeout(promesa, ms, etiqueta) {
-  return Promise.race([
-    promesa,
-    new Promise((_, reject) => setTimeout(() => reject(new Error(`Tiempo de espera agotado (${etiqueta})`)), ms))
-  ]);
-}
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-// Íconos por dominio conocido, con genérico de respaldo
-function iconForUrl(url) {
-  const map = {
-    'instagram.com': 'fa-brands fa-instagram',
-    'tiktok.com': 'fa-brands fa-tiktok',
-    'youtube.com': 'fa-brands fa-youtube',
-    'twitter.com': 'fa-brands fa-x-twitter',
-    'x.com': 'fa-brands fa-x-twitter',
-    'facebook.com': 'fa-brands fa-facebook',
-    'wa.me': 'fa-brands fa-whatsapp',
-    'whatsapp.com': 'fa-brands fa-whatsapp',
-    'github.com': 'fa-brands fa-github',
-    'linkedin.com': 'fa-brands fa-linkedin',
-    'spotify.com': 'fa-brands fa-spotify',
-  };
-  try {
-    const host = new URL(url).hostname.replace('www.', '');
-    for (const domain in map) {
-      if (host.includes(domain)) return map[domain];
-    }
-  } catch (e) {}
-  return 'fa-solid fa-arrow-up-right-from-square';
-}
-
-function aplicarTema(theme) {
-  const accent = (theme && theme.accent) || '#6c5ce7';
-  document.documentElement.style.setProperty('--accent', accent);
-  document.documentElement.style.setProperty('--accent-soft', accent + '4d');
-
-  // ── Fondo ──────────────────────────────
-  const bg = (theme && theme.bg) || {};
-  const tipoFondo = bg.type || 'solid';
-
-  if (tipoFondo === 'gradient' && bg.gradientFrom && bg.gradientTo) {
-    document.body.style.background = `linear-gradient(${bg.gradientAngle ?? 135}deg, ${bg.gradientFrom}, ${bg.gradientTo})`;
-    els.bgOverlay.style.opacity = '0';
-  } else if (tipoFondo === 'image' && bg.imageUrl) {
-    document.body.style.background = `url("${bg.imageUrl}")`;
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center';
-    els.bgOverlay.style.opacity = String(bg.overlayOpacity ?? 0.55);
-  } else {
-    document.body.style.background = bg.solid || '#0e0e13';
-    els.bgOverlay.style.opacity = '0';
-  }
-
-  // ── Botones ──────────────────────────────
-  const btn = (theme && theme.button) || {};
-  const tipoBoton = btn.type || 'solid';
-
-  if (tipoBoton === 'gradient' && btn.gradientFrom && btn.gradientTo) {
-    document.documentElement.style.setProperty('--btn-bg', `linear-gradient(${btn.gradientAngle ?? 135}deg, ${btn.gradientFrom}, ${btn.gradientTo})`);
-  } else {
-    document.documentElement.style.setProperty('--btn-bg', btn.solid || 'var(--surface)');
-  }
-  document.documentElement.style.setProperty('--btn-text', btn.textColor || 'var(--text)');
-}
-
-async function init() {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    let slug = params.get('u');
-
-    if (!slug) {
-      // Sin ?u=, intentamos leer el slug del último segmento de la ruta
-      // (esto ocurre cuando este archivo se sirve como 404.html de GitHub Pages
-      // para URLs limpias tipo /tusitio/tu_usuario)
-      const segmentos = window.location.pathname.split('/').filter(Boolean);
-      const ultimo = segmentos[segmentos.length - 1] || '';
-      const archivosReservados = ['index.html', '404.html', 'registro.html', 'admin.html', 'aprobaciones.html'];
-      if (ultimo && !archivosReservados.includes(ultimo.toLowerCase())) {
-        slug = ultimo;
-      }
-    }
-
-    if (!slug) {
-      showState('notFound');
-      return;
-    }
-
-    const { data: profile, error } = await conTimeout(
-      sb
-        .from('profiles')
-        .select('id, slug, display_name, bio, avatar_url, theme, status')
-        .eq('slug', slug)
-        .eq('status', 'aprobado')
-        .maybeSingle(),
-      10000,
-      'perfil'
-    );
-
-    if (error) throw new Error(error.message || 'Error consultando el perfil');
-
-    if (!profile) {
-      showState('notFound');
-      return;
-    }
-
-    aplicarTema(profile.theme);
-
-    els.name.textContent = profile.display_name || profile.slug;
-    els.bio.textContent = profile.bio || '';
-    els.bio.classList.toggle('hidden', !profile.bio);
-
-    if (profile.avatar_url) {
-      els.avatarImg.src = profile.avatar_url;
-      els.avatarImg.classList.remove('hidden');
-    } else {
-      const inicial = (profile.display_name || profile.slug || '?').trim().charAt(0).toUpperCase();
-      els.avatarFallback.textContent = inicial;
-      els.avatarFallback.classList.remove('hidden');
-    }
-
-    const { data: links, error: linksError } = await conTimeout(
-      sb
-        .from('links')
-        .select('id, title, url, icon, is_social')
-        .eq('profile_id', profile.id)
-        .eq('active', true)
-        .order('sort_order', { ascending: true }),
-      10000,
-      'enlaces'
-    );
-
-    if (linksError) throw new Error(linksError.message || 'Error consultando los enlaces');
-
-    const todos = links || [];
-    const sociales = todos.filter(l => l.is_social);
-    const normales = todos.filter(l => !l.is_social);
-
-    if (sociales.length) {
-      els.socials.innerHTML = sociales.map(link => `
-        <a class="social-icon" href="${link.url}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(link.title)}">
-          <i class="${link.icon || iconForUrl(link.url)}"></i>
-        </a>
-      `).join('');
-      els.socials.classList.remove('hidden');
-    }
-
-    if (normales.length) {
-      els.links.innerHTML = normales.map(link => `
-        <a class="link-card" href="${link.url}" target="_blank" rel="noopener noreferrer">
-          <span class="link-icon"><i class="${link.icon || iconForUrl(link.url)}"></i></span>
-          <span class="link-title">${escapeHtml(link.title)}</span>
-          <span class="link-go"><i class="fa-solid fa-chevron-right"></i></span>
-        </a>
-      `).join('');
-    }
-
-    showState('profileWrap');
-
-  } catch (err) {
-    console.error('Error cargando el perfil:', err);
-    els.loadErrorDetail.textContent = err.message || 'Hubo un problema de conexión. Intenta recargar la página.';
-    showState('loadError');
-  }
-}
-
-init();
-</script>
+<footer>
+  <p>© 2026 linkards. Todos los derechos reservados.</p>
+</footer>
 
 </body>
 </html>
