@@ -208,6 +208,72 @@
   }
   .color-value { font-size: 13px; color: var(--muted); font-family: monospace; }
 
+  /* Selector segmentado (Sólido/Degradado/Imagen) */
+  .segmented {
+    display: flex;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 3px;
+    margin-bottom: 16px;
+  }
+  .seg-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 6px;
+    border-radius: 7px;
+    cursor: pointer;
+  }
+  .seg-btn.active {
+    background: var(--surface);
+    color: var(--text);
+  }
+  .bg-fields { margin-bottom: 4px; }
+
+  input[type=range] {
+    accent-color: var(--accent);
+  }
+
+  .bg-image-preview {
+    width: 90px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    margin: 10px 0 16px;
+    cursor: pointer;
+  }
+  .checkbox-row input[type=checkbox] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .link-social-tag {
+    font-size: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    padding: 1px 6px;
+    border-radius: 20px;
+    margin-left: 6px;
+  }
+
   /* Links */
   .link-form {
     display: flex;
@@ -356,16 +422,107 @@
     </div>
   </div>
 
+  <!-- Fondo -->
+  <div class="panel">
+    <h2>Fondo</h2>
+    <p class="panel-sub">Elige cómo se ve el fondo de tu weblink.</p>
+
+    <div class="segmented" id="bg-type-segmented">
+      <button type="button" class="seg-btn active" data-value="solid">Sólido</button>
+      <button type="button" class="seg-btn" data-value="gradient">Degradado</button>
+      <button type="button" class="seg-btn" data-value="image">Imagen</button>
+    </div>
+
+    <!-- Sólido -->
+    <div id="bg-solid-fields" class="bg-fields">
+      <label>Color</label>
+      <div class="color-row">
+        <input type="color" id="bg-solid-input" value="#0e0e13">
+        <span class="color-value" id="bg-solid-value">#0e0e13</span>
+      </div>
+    </div>
+
+    <!-- Degradado -->
+    <div id="bg-gradient-fields" class="bg-fields hidden">
+      <label>Colores</label>
+      <div class="color-row">
+        <input type="color" id="bg-grad-from" value="#1a1a2e">
+        <input type="color" id="bg-grad-to" value="#0e0e13">
+        <span class="color-value">Ángulo</span>
+        <input type="range" id="bg-grad-angle" min="0" max="360" value="135" style="flex:1;">
+        <span class="color-value" id="bg-grad-angle-value">135°</span>
+      </div>
+    </div>
+
+    <!-- Imagen -->
+    <div id="bg-image-fields" class="bg-fields hidden">
+      <label>Imagen de fondo</label>
+      <div class="avatar-row" style="align-items:flex-start;">
+        <img id="bg-image-preview" class="bg-image-preview hidden" alt="">
+        <div class="avatar-actions">
+          <label class="btn-secondary" for="bg-image-input" style="cursor:pointer; text-align:center;">Subir imagen</label>
+          <input type="file" id="bg-image-input" accept="image/*">
+          <span class="avatar-hint" id="bg-image-hint"></span>
+        </div>
+      </div>
+      <label>Intensidad de la capa oscura</label>
+      <div class="color-row">
+        <input type="range" id="bg-overlay-input" min="0" max="100" value="55" style="flex:1;">
+        <span class="color-value" id="bg-overlay-value">55%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botones -->
+  <div class="panel">
+    <h2>Estilo de los botones</h2>
+    <p class="panel-sub">Así se ven las tarjetas de tus enlaces.</p>
+
+    <div class="segmented" id="btn-type-segmented">
+      <button type="button" class="seg-btn active" data-value="solid">Sólido</button>
+      <button type="button" class="seg-btn" data-value="gradient">Degradado</button>
+    </div>
+
+    <div id="btn-solid-fields" class="bg-fields">
+      <label>Color de fondo</label>
+      <div class="color-row">
+        <input type="color" id="btn-solid-input" value="#17171f">
+        <span class="color-value" id="btn-solid-value">#17171f</span>
+      </div>
+    </div>
+
+    <div id="btn-gradient-fields" class="bg-fields hidden">
+      <label>Colores</label>
+      <div class="color-row">
+        <input type="color" id="btn-grad-from" value="#6c5ce7">
+        <input type="color" id="btn-grad-to" value="#a855f7">
+        <span class="color-value">Ángulo</span>
+        <input type="range" id="btn-grad-angle" min="0" max="360" value="135" style="flex:1;">
+        <span class="color-value" id="btn-grad-angle-value">135°</span>
+      </div>
+    </div>
+
+    <label>Color del texto</label>
+    <div class="color-row">
+      <input type="color" id="btn-text-input" value="#f2f2f5">
+      <span class="color-value" id="btn-text-value">#f2f2f5</span>
+    </div>
+  </div>
+
   <!-- Links -->
   <div class="panel">
     <h2>Tus enlaces</h2>
-    <p class="panel-sub">Arrastra para reordenar. Se muestran en ese orden en tu weblink.</p>
+    <p class="panel-sub">Arrastra para reordenar. Se muestran en ese orden en tu weblink. Marca "red social" para mostrarlo como ícono en la fila superior.</p>
 
     <div class="link-form">
       <input type="text" id="new-link-title" placeholder="Título (ej. Instagram)">
       <input type="text" id="new-link-url" placeholder="https://...">
       <button class="btn-secondary" id="btn-add-link">Agregar</button>
     </div>
+    <label class="checkbox-row">
+      <input type="checkbox" id="new-link-social">
+      Es una red social (mostrar solo el ícono arriba)
+    </label>
 
     <div class="link-list" id="link-list"></div>
     <p class="empty-hint hidden" id="empty-hint">Aún no tienes enlaces. Agrega el primero arriba.</p>
@@ -427,8 +584,37 @@ const els = {
   accentInput: document.getElementById('accent-input'),
   accentValue: document.getElementById('accent-value'),
 
+  bgTypeSegmented: document.getElementById('bg-type-segmented'),
+  bgSolidFields: document.getElementById('bg-solid-fields'),
+  bgGradientFields: document.getElementById('bg-gradient-fields'),
+  bgImageFields: document.getElementById('bg-image-fields'),
+  bgSolidInput: document.getElementById('bg-solid-input'),
+  bgSolidValue: document.getElementById('bg-solid-value'),
+  bgGradFrom: document.getElementById('bg-grad-from'),
+  bgGradTo: document.getElementById('bg-grad-to'),
+  bgGradAngle: document.getElementById('bg-grad-angle'),
+  bgGradAngleValue: document.getElementById('bg-grad-angle-value'),
+  bgImagePreview: document.getElementById('bg-image-preview'),
+  bgImageInput: document.getElementById('bg-image-input'),
+  bgImageHint: document.getElementById('bg-image-hint'),
+  bgOverlayInput: document.getElementById('bg-overlay-input'),
+  bgOverlayValue: document.getElementById('bg-overlay-value'),
+
+  btnTypeSegmented: document.getElementById('btn-type-segmented'),
+  btnSolidFields: document.getElementById('btn-solid-fields'),
+  btnGradientFields: document.getElementById('btn-gradient-fields'),
+  btnSolidInput: document.getElementById('btn-solid-input'),
+  btnSolidValue: document.getElementById('btn-solid-value'),
+  btnGradFrom: document.getElementById('btn-grad-from'),
+  btnGradTo: document.getElementById('btn-grad-to'),
+  btnGradAngle: document.getElementById('btn-grad-angle'),
+  btnGradAngleValue: document.getElementById('btn-grad-angle-value'),
+  btnTextInput: document.getElementById('btn-text-input'),
+  btnTextValue: document.getElementById('btn-text-value'),
+
   newLinkTitle: document.getElementById('new-link-title'),
   newLinkUrl: document.getElementById('new-link-url'),
+  newLinkSocial: document.getElementById('new-link-social'),
   btnAddLink: document.getElementById('btn-add-link'),
   linkList: document.getElementById('link-list'),
   emptyHint: document.getElementById('empty-hint'),
@@ -436,6 +622,10 @@ const els = {
   btnGuardar: document.getElementById('btn-guardar'),
   saveMsg: document.getElementById('save-msg'),
 };
+
+let bgTypeActual = 'solid';
+let btnTypeActual = 'solid';
+let bgImageFileToUpload = null;
 
 function mostrarMsg(el, texto, tipo) {
   el.textContent = texto;
@@ -523,7 +713,7 @@ function pintarPerfil() {
   if (!aprobado) return; // no cargamos ni pintamos campos editables si no está aprobado
 
   els.slugDisplay.textContent = currentProfile.slug;
-  els.verPerfil.href = `index.html?u=${encodeURIComponent(currentProfile.slug)}`;
+  els.verPerfil.href = `./${encodeURIComponent(currentProfile.slug)}`;
 
   els.displayNameInput.value = currentProfile.display_name || '';
   els.bioInput.value = currentProfile.bio || '';
@@ -531,6 +721,43 @@ function pintarPerfil() {
   const accent = (currentProfile.theme && currentProfile.theme.accent) || '#6c5ce7';
   els.accentInput.value = accent;
   els.accentValue.textContent = accent;
+
+  // ── Cargar configuración de fondo ──────────────────────────────
+  const bg = (currentProfile.theme && currentProfile.theme.bg) || {};
+  bgTypeActual = bg.type || 'solid';
+  els.bgTypeSegmented.querySelectorAll('.seg-btn').forEach(b => b.classList.toggle('active', b.dataset.value === bgTypeActual));
+  els.bgSolidFields.classList.toggle('hidden', bgTypeActual !== 'solid');
+  els.bgGradientFields.classList.toggle('hidden', bgTypeActual !== 'gradient');
+  els.bgImageFields.classList.toggle('hidden', bgTypeActual !== 'image');
+
+  els.bgSolidInput.value = bg.solid || '#0e0e13';
+  els.bgSolidValue.textContent = els.bgSolidInput.value;
+  els.bgGradFrom.value = bg.gradientFrom || '#1a1a2e';
+  els.bgGradTo.value = bg.gradientTo || '#0e0e13';
+  els.bgGradAngle.value = bg.gradientAngle ?? 135;
+  els.bgGradAngleValue.textContent = els.bgGradAngle.value + '°';
+  els.bgOverlayInput.value = Math.round((bg.overlayOpacity ?? 0.55) * 100);
+  els.bgOverlayValue.textContent = els.bgOverlayInput.value + '%';
+  if (bg.imageUrl) {
+    els.bgImagePreview.src = bg.imageUrl;
+    els.bgImagePreview.classList.remove('hidden');
+  }
+
+  // ── Cargar configuración de botones ──────────────────────────────
+  const btnTheme = (currentProfile.theme && currentProfile.theme.button) || {};
+  btnTypeActual = btnTheme.type || 'solid';
+  els.btnTypeSegmented.querySelectorAll('.seg-btn').forEach(b => b.classList.toggle('active', b.dataset.value === btnTypeActual));
+  els.btnSolidFields.classList.toggle('hidden', btnTypeActual !== 'solid');
+  els.btnGradientFields.classList.toggle('hidden', btnTypeActual !== 'gradient');
+
+  els.btnSolidInput.value = btnTheme.solid || '#17171f';
+  els.btnSolidValue.textContent = els.btnSolidInput.value;
+  els.btnGradFrom.value = btnTheme.gradientFrom || '#6c5ce7';
+  els.btnGradTo.value = btnTheme.gradientTo || '#a855f7';
+  els.btnGradAngle.value = btnTheme.gradientAngle ?? 135;
+  els.btnGradAngleValue.textContent = els.btnGradAngle.value + '°';
+  els.btnTextInput.value = btnTheme.textColor || '#f2f2f5';
+  els.btnTextValue.textContent = els.btnTextInput.value;
 
   if (currentProfile.avatar_url) {
     els.avatarPreview.src = currentProfile.avatar_url;
@@ -547,6 +774,56 @@ function pintarPerfil() {
 els.accentInput.addEventListener('input', () => {
   els.accentValue.textContent = els.accentInput.value;
 });
+
+// ── Fondo: selector segmentado ──────────────────────────────
+els.bgTypeSegmented.querySelectorAll('.seg-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    els.bgTypeSegmented.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    bgTypeActual = btn.dataset.value;
+    els.bgSolidFields.classList.toggle('hidden', bgTypeActual !== 'solid');
+    els.bgGradientFields.classList.toggle('hidden', bgTypeActual !== 'gradient');
+    els.bgImageFields.classList.toggle('hidden', bgTypeActual !== 'image');
+  });
+});
+
+els.bgSolidInput.addEventListener('input', () => { els.bgSolidValue.textContent = els.bgSolidInput.value; });
+els.bgGradAngle.addEventListener('input', () => { els.bgGradAngleValue.textContent = els.bgGradAngle.value + '°'; });
+els.bgOverlayInput.addEventListener('input', () => { els.bgOverlayValue.textContent = els.bgOverlayInput.value + '%'; });
+
+els.bgImageInput.addEventListener('change', () => {
+  const file = els.bgImageInput.files[0];
+  if (!file) return;
+  if (file.size > 4 * 1024 * 1024) {
+    els.bgImageHint.textContent = 'La imagen debe pesar menos de 4MB';
+    els.bgImageHint.style.color = 'var(--err)';
+    return;
+  }
+  bgImageFileToUpload = file;
+  els.bgImageHint.textContent = 'Se subirá al guardar cambios';
+  els.bgImageHint.style.color = 'var(--accent)';
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    els.bgImagePreview.src = e.target.result;
+    els.bgImagePreview.classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+});
+
+// ── Botones: selector segmentado ──────────────────────────────
+els.btnTypeSegmented.querySelectorAll('.seg-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    els.btnTypeSegmented.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    btnTypeActual = btn.dataset.value;
+    els.btnSolidFields.classList.toggle('hidden', btnTypeActual !== 'solid');
+    els.btnGradientFields.classList.toggle('hidden', btnTypeActual !== 'gradient');
+  });
+});
+
+els.btnSolidInput.addEventListener('input', () => { els.btnSolidValue.textContent = els.btnSolidInput.value; });
+els.btnGradAngle.addEventListener('input', () => { els.btnGradAngleValue.textContent = els.btnGradAngle.value + '°'; });
+els.btnTextInput.addEventListener('input', () => { els.btnTextValue.textContent = els.btnTextInput.value; });
 
 // ── Avatar: selección y preview local ──────────────────────────────
 els.avatarInput.addEventListener('change', () => {
@@ -587,12 +864,14 @@ els.btnAddLink.addEventListener('click', () => {
     title,
     url,
     active: true,
+    is_social: els.newLinkSocial.checked,
     sort_order: currentLinks.length,
     _isNew: true,
   });
 
   els.newLinkTitle.value = '';
   els.newLinkUrl.value = '';
+  els.newLinkSocial.checked = false;
   pintarLinks();
 });
 
@@ -610,7 +889,7 @@ function pintarLinks() {
     row.innerHTML = `
       <span class="grip"><i class="fa-solid fa-grip-vertical"></i></span>
       <div class="link-info">
-        <div class="lt">${escapeHtml(link.title)}</div>
+        <div class="lt">${escapeHtml(link.title)}${link.is_social ? '<span class="link-social-tag">red social</span>' : ''}</div>
         <div class="lu">${escapeHtml(link.url)}</div>
       </div>
       <div class="link-row-actions">
@@ -697,21 +976,59 @@ els.btnGuardar.addEventListener('click', async () => {
       avatarUrl = publicUrlData.publicUrl + '?t=' + Date.now(); // cache-busting
     }
 
-    // 2) Actualizar perfil
+    // 2) Subir imagen de fondo si hay una nueva
+    let bgImageUrl = (currentProfile.theme && currentProfile.theme.bg && currentProfile.theme.bg.imageUrl) || null;
+    if (bgImageFileToUpload) {
+      const ext = bgImageFileToUpload.name.split('.').pop();
+      const path = `${currentUser.id}/background.${ext}`;
+
+      const { error: bgUploadError } = await sb.storage
+        .from('avatars')
+        .upload(path, bgImageFileToUpload, { upsert: true });
+
+      if (bgUploadError) throw new Error('Error subiendo la imagen de fondo: ' + bgUploadError.message);
+
+      const { data: bgPublicUrlData } = sb.storage.from('avatars').getPublicUrl(path);
+      bgImageUrl = bgPublicUrlData.publicUrl + '?t=' + Date.now();
+    }
+
+    // 3) Componer el objeto de tema completo
+    const theme = {
+      accent: els.accentInput.value,
+      bg: {
+        type: bgTypeActual,
+        solid: els.bgSolidInput.value,
+        gradientFrom: els.bgGradFrom.value,
+        gradientTo: els.bgGradTo.value,
+        gradientAngle: parseInt(els.bgGradAngle.value, 10),
+        imageUrl: bgImageUrl,
+        overlayOpacity: parseInt(els.bgOverlayInput.value, 10) / 100,
+      },
+      button: {
+        type: btnTypeActual,
+        solid: els.btnSolidInput.value,
+        gradientFrom: els.btnGradFrom.value,
+        gradientTo: els.btnGradTo.value,
+        gradientAngle: parseInt(els.btnGradAngle.value, 10),
+        textColor: els.btnTextInput.value,
+      },
+    };
+
+    // 4) Actualizar perfil
     const { error: profileError } = await sb
       .from('profiles')
       .update({
         display_name: els.displayNameInput.value.trim(),
         bio: els.bioInput.value.trim(),
         avatar_url: avatarUrl,
-        theme: { accent: els.accentInput.value },
+        theme: theme,
         updated_at: new Date().toISOString(),
       })
       .eq('id', currentUser.id);
 
     if (profileError) throw new Error('Error guardando perfil: ' + profileError.message);
 
-    // 3) Borrar links eliminados
+    // 5) Borrar links eliminados
     if (linksEliminados.length > 0) {
       const { error: delError } = await sb
         .from('links')
@@ -720,7 +1037,7 @@ els.btnGuardar.addEventListener('click', async () => {
       if (delError) throw new Error('Error eliminando enlaces: ' + delError.message);
     }
 
-    // 4) Insertar links nuevos y actualizar existentes
+    // 6) Insertar links nuevos y actualizar existentes
     for (const link of currentLinks) {
       if (link._isNew) {
         const { error: insError } = await sb.from('links').insert({
@@ -728,12 +1045,13 @@ els.btnGuardar.addEventListener('click', async () => {
           title: link.title,
           url: link.url,
           active: link.active,
+          is_social: !!link.is_social,
           sort_order: link.sort_order,
         });
         if (insError) throw new Error('Error creando enlace: ' + insError.message);
       } else {
         const { error: updError } = await sb.from('links')
-          .update({ active: link.active, sort_order: link.sort_order })
+          .update({ active: link.active, sort_order: link.sort_order, is_social: !!link.is_social })
           .eq('id', link.id);
         if (updError) throw new Error('Error actualizando enlace: ' + updError.message);
       }
@@ -741,7 +1059,9 @@ els.btnGuardar.addEventListener('click', async () => {
 
     linksEliminados = [];
     avatarFileToUpload = null;
+    bgImageFileToUpload = null;
     els.avatarHint.textContent = '';
+    els.bgImageHint.textContent = '';
 
     mostrarMsg(els.saveMsg, 'Cambios guardados correctamente', 'ok');
     await cargarDashboard();
