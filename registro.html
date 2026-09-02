@@ -188,6 +188,22 @@
     </div>
   </div>
 
+  <!-- ESTADO 6: sesión activa pero sin perfil (ej. tras confirmar correo) -->
+  <div id="form-solo-slug" class="hidden">
+    <h1>Ya casi terminas</h1>
+    <p class="subtitle">Elige el nombre de tu weblink</p>
+
+    <label>Nombre de usuario</label>
+    <div class="slug-wrap">
+      <span>/</span>
+      <input type="text" id="slug-input-2" placeholder="tu_usuario" autocomplete="off">
+    </div>
+    <div class="slug-status" id="slug-status-2"></div>
+
+    <button class="primary" id="btn-registro-slug" disabled>Finalizar registro</button>
+    <div class="msg" id="form-msg-2"></div>
+  </div>
+
 </div>
 
 <script src="supabase.min.js"></script>
@@ -217,6 +233,12 @@ const els = {
   loadError: document.getElementById('load-error'),
   loadErrorDetail: document.getElementById('load-error-detail'),
 
+  formSoloSlug: document.getElementById('form-solo-slug'),
+  slugInput2: document.getElementById('slug-input-2'),
+  slugStatus2: document.getElementById('slug-status-2'),
+  btnRegistroSlug: document.getElementById('btn-registro-slug'),
+  formMsg2: document.getElementById('form-msg-2'),
+
   slugInput: document.getElementById('slug-input'),
   slugStatus: document.getElementById('slug-status'),
   emailInput: document.getElementById('email-input'),
@@ -228,7 +250,7 @@ const els = {
 };
 
 function showOnly(id) {
-  ['loading','formCompleto','success','yaRegistrado','loadError'].forEach(k => {
+  ['loading','formCompleto','success','yaRegistrado','loadError','formSoloSlug'].forEach(k => {
     els[k].classList.toggle('hidden', k !== id);
   });
 }
@@ -250,7 +272,7 @@ function normalizarSlug(v) {
 let slugCheckTimeout = null;
 let slugValido = false;
 
-function validarSlug(input, statusEl, boton) {
+function validarSlug(input, statusEl, boton, soloSlug) {
   const valor = normalizarSlug(input.value);
   input.value = valor;
 
@@ -294,7 +316,7 @@ function validarSlug(input, statusEl, boton) {
       statusEl.textContent = '✓ Disponible';
       statusEl.className = 'slug-status ok';
       slugValido = true;
-      boton.disabled = !camposCompletos();
+      boton.disabled = soloSlug ? false : !camposCompletos();
     }
   }, 400);
 }
@@ -303,9 +325,11 @@ function camposCompletos() {
   return slugValido && els.emailInput.value.includes('@') && els.passwordInput.value.length >= 6;
 }
 
-els.slugInput.addEventListener('input', () => validarSlug(els.slugInput, els.slugStatus, els.btnRegistroEmail));
+els.slugInput.addEventListener('input', () => validarSlug(els.slugInput, els.slugStatus, els.btnRegistroEmail, false));
+els.slugInput2.addEventListener('input', () => validarSlug(els.slugInput2, els.slugStatus2, els.btnRegistroSlug, true));
 els.emailInput.addEventListener('input', () => { els.btnRegistroEmail.disabled = !camposCompletos(); });
 els.passwordInput.addEventListener('input', () => { els.btnRegistroEmail.disabled = !camposCompletos(); });
+
 
 function mostrarMsg(el, texto, tipo) {
   el.textContent = texto;
@@ -330,12 +354,14 @@ els.btnRegistroEmail.addEventListener('click', async () => {
     return;
   }
 
-  const userId = signUpData.user?.id;
-  if (!userId) {
-    mostrarMsg(els.formMsg, 'Revisa tu correo para confirmar tu cuenta antes de continuar.', 'ok');
+  if (!signUpData.session) {
+    mostrarMsg(els.formMsg, 'Cuenta creada. Revisa tu correo para confirmar tu cuenta y luego inicia sesión aquí para completar tu registro.', 'ok');
+    els.btnRegistroEmail.disabled = false;
     els.btnRegistroEmail.textContent = 'Crear cuenta';
     return;
   }
+
+  const userId = signUpData.user.id;
 
   const { error: profileError } = await sb.from('profiles').insert({
     id: userId,
@@ -347,6 +373,31 @@ els.btnRegistroEmail.addEventListener('click', async () => {
     mostrarMsg(els.formMsg, 'Cuenta creada, pero hubo un error guardando tu perfil: ' + profileError.message, 'err');
     els.btnRegistroEmail.disabled = false;
     els.btnRegistroEmail.textContent = 'Crear cuenta';
+    return;
+  }
+
+  els.successSlug.textContent = '/' + slug;
+  showOnly('success');
+});
+
+// ── Finalizar registro cuando ya hay sesión pero falta el perfil ──────────────────────────────
+els.btnRegistroSlug.addEventListener('click', async () => {
+  els.btnRegistroSlug.disabled = true;
+  els.btnRegistroSlug.textContent = 'Guardando…';
+
+  const { data: { user } } = await sb.auth.getUser();
+  const slug = els.slugInput2.value;
+
+  const { error } = await sb.from('profiles').insert({
+    id: user.id,
+    slug: slug,
+    display_name: slug,
+  });
+
+  if (error) {
+    mostrarMsg(els.formMsg2, error.message, 'err');
+    els.btnRegistroSlug.disabled = false;
+    els.btnRegistroSlug.textContent = 'Finalizar registro';
     return;
   }
 
@@ -376,8 +427,8 @@ async function init() {
     if (profile) {
       showOnly('yaRegistrado');
     } else {
-      // Sesión sin perfil (caso raro): dejamos ver el formulario para que complete su registro
-      showOnly('formCompleto');
+      // Sesión activa sin perfil (ej. confirmó su correo pero no había alcanzado a crear su perfil)
+      showOnly('formSoloSlug');
     }
   } catch (err) {
     console.error('Error al iniciar registro.html:', err);
